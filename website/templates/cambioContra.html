@@ -1,0 +1,25 @@
+{% extends "base_login.html"%}
+{% block title %}Cambiar Contraseña - Parqueo{% endblock %}
+
+{% block imagen %}
+<img src="{{ url_for('static', filename='images/Imagen-cambio.jpg')}}" alt="Parqueo con carros" class="img-fluid"
+    style="border-radius: 25px 0 0 25px;" />
+{% endblock %}
+
+{% block contenido %}
+<div class="card-body px-5 my-5">
+    <form>
+        <h5 class="mb-3 pb-3 text-center" style="letter-spacing: 1px;">Cambio de contraseña</h5>
+
+        <div class="mb-4">
+            <input type="password" id="contrasenaCambio" class="form-control form-control-lg"
+                placeholder="Contraseña nueva" />
+        </div>
+        <div class="pt-4 mb-4 text-center">
+            <button id="btnCambiar" name="btnCambiar" class="btn btn-primary btn-lg btn-block" type="button">Cambiar
+                contraseña</button>
+        </div>
+
+    </form>
+</div>
+{% endblock %}

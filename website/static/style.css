@@ -1,0 +1,48 @@
+html, body{
+    font-family: 'Moulpali', 'Sans';
+    height: 100%;
+
+}
+
+h3, h5{
+    color: #5C2B86 !important;
+}
+
+/* Fondos */
+nav, .fondo{
+    background-color: #704F8C;
+}
+.fondoLogin{
+    background-image: url(./Images/patron-fondo.png);
+    background-position: 250px 370px;
+    background-size: 512px 593px;
+    background-repeat: no-repeat;
+}
+
+.fondoDB{
+    background-image: url(./Images/patron-fondo.png);
+    background-position: right 470px;
+    background-size: 512px 593px;
+    background-repeat: no-repeat;
+}
+
+/* Botones */
+.btn-primary {
+    background-color: #5C2B86 !important;
+    border-color: #5C2B86 !important;
+}
+
+.btn-primary:hover {
+    background-color: #704F8C !important;
+    border-color: #704F8C !important;
+}
+
+.mt-6{
+    margin-top: 150px;
+}
+
+
+
+input[type=checkbox]{
+    accent-color: #704F8C;
+}
