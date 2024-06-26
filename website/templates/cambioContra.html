@@ -1,23 +1,23 @@
-{% extends "base_login.html"%}
-{% block title %}Cambiar Contraseña - Parqueo{% endblock %}
+{% extends "base_login.html"%} <!-- Se extiende de base_login.html -->
+{% block title %}Cambiar Contraseña{% endblock %} <!-- El título de la pagina -->
 
-{% block imagen %}
-<img src="{{ url_for('static', filename='images/Imagen-cambio.jpg')}}" alt="Parqueo con carros" class="img-fluid"
-    style="border-radius: 25px 0 0 25px;" />
+{% block imagen %} <!-- Imagen del contenedor -->
+<img src="{{ url_for('static', filename='images/Imagen-cambio.jpg')}}" alt="Parqueo con carros" class="img-fluid" style="border-radius: 25px 0 0 25px;" />
 {% endblock %}
 
-{% block contenido %}
+{% block contenido %} <!-- Formulario de cambio de contraseña  -->
 <div class="card-body px-5 my-5">
-    <form>
+    <form method="POST">
         <h5 class="mb-3 pb-3 text-center" style="letter-spacing: 1px;">Cambio de contraseña</h5>
 
         <div class="mb-4">
-            <input type="password" id="contrasenaCambio" class="form-control form-control-lg"
-                placeholder="Contraseña nueva" />
+            <input type="password" id="cambioContrasena" name="cambioContrasena" class="form-control form-control-lg" placeholder="Contraseña nueva" />
+        </div>
+        <div class="mb-4">
+            <input type="password" id="confirmarContrasena" name="confirmarContrasena" class="form-control form-control-lg" placeholder="Confirmar contraseña" />
         </div>
         <div class="pt-4 mb-4 text-center">
-            <button id="btnCambiar" name="btnCambiar" class="btn btn-primary btn-lg btn-block" type="button">Cambiar
-                contraseña</button>
+            <button id="btnCambiar" name="btnCambiar" class="btn btn-primary btn-lg btn-block" type="submit">Cambiar contraseña</button>
         </div>
 
     </form>

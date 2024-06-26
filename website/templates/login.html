@@ -1,26 +1,24 @@
 {% extends "base_login.html"%}
-{% block title %}Login - Parqueo{% endblock %}
+{% block title %}Login{% endblock %}
 
 {% block imagen %}
-<img src="{{ url_for('static', filename='images/Imagen-login.jpg')}}" alt="Parqueo con carros" class="img-fluid"
-    style="border-radius: 25px 0 0 25px;" />
+<img src="{{ url_for('static', filename='images/Imagen-login.jpg')}}" alt="Parqueo con carros" class="img-fluid" style="border-radius: 25px 0 0 25px;" /> <!-- Imagen del contenedor -->
 {% endblock %}
 
-{% block contenido %}
+{% block contenido %} <!-- Formulario de inicio  -->
 <div class="card-body px-5  my-3">
-    <form>
+    <form method="POST">
         <h5 class="mb-3 pb-3 text-center" style="letter-spacing: 1px;">¡Bienvenido!</h5>
 
         <div class="mb-4">
-            <input type="email" id="correo" class="form-control form-control-lg" placeholder="Correo" />
+            <input type="email" id="correo" name="correo" class="form-control form-control-lg" placeholder="Correo" />
         </div>
 
         <div class="mb-4">
-            <input type="password" id="contrasena" class="form-control form-control-lg" placeholder="Contraseña" />
+            <input type="password" id="contrasena" name="contrasena" class="form-control form-control-lg" placeholder="Contraseña" />
         </div>
         <div class="pt-4 mb-4 text-center">
-            <button id="btnIniciar" name="btnIniciar" class="btn btn-primary btn-lg btn-block" type="button">Iniciar
-                Sesión</button>
+            <button id="btnIniciar" class="btn btn-primary btn-lg btn-block" type="submit">Iniciar Sesión</button>
         </div>
     </form>
 </div>

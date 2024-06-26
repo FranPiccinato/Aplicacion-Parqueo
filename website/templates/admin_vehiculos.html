@@ -1,12 +1,11 @@
-{% extends "base.html"%}
-{% block title %}Gestión de vehículos{% endblock %}
+{% extends "base.html"%} <!-- Se extiende de base.html -->
+{% block title %}Gestión de vehículos{% endblock %} <!-- El título de la pagina -->
 
-{% block navResponsive %}
-<div class="collapse collapse.show fondo d-lg-none" id="sidebar" aria-labelledby="sidebarImage">
+{% block navResponsive %} <!-- Menú responsive -->
+<div class="collapse collapse.show fondo d-lg-none" id="sidebar">
     <div class="collapse-header">
-        <a href="#">
-            <img src="{{ url_for('static', filename='images/logo-ULACIT_blanco.png')}}" width="200" height="70"
-                alt="logo ulacit">
+        <a href="/">
+            <img src="{{ url_for('static', filename='images/logo-ULACIT_blanco.png')}}" width="200" height="70" alt="Logo ulacit">
         </a>
     </div>
     <div class="collapse-body">
@@ -16,33 +15,25 @@
                 <a class="nav-link active text-light" href="/registrar-usuarios">Usuarios</a>
             </li>
             <li class="nav-item">
-                <a class="nav-link text-light" href="/registrar-parqueos">
-                    Parqueos
-                </a>
+                <a class="nav-link text-light" href="/registrar-parqueos">Parqueos</a>
             </li>
             <li class="nav-item">
-                <a class="nav-link text-light" href="/registrar-vehiculos">
-                    Vehículos
-                </a>
+                <a class="nav-link text-light" href="/registrar-vehiculos">Vehículos</a>
             </li>
         </ul>
         <ul class="nav flex-column">
             <h3 class="text-uppercase mt-5 text-light">Reportes</h3>
             <li class="nav-item">
-                <a class="nav-link active text-light" href="#">Reportes de ocupación</a>
+                <a class="nav-link active text-light" href="/">Reportes de ocupación</a>
             </li>
             <li class="nav-item">
-                <a class="nav-link text-light" href="#">
-                    Reportes de ingresos
-                </a>
+                <a class="nav-link text-light" href="/">Reportes de ingresos</a>
             </li>
             <li class="nav-item">
-                <a class="nav-link text-light" href="#">
-                    Reportes de aprobación
-                </a>
+                <a class="nav-link text-light" href="/">Reportes de aprobación</a>
             </li>
             <li class="nav-item my-2">
-                <a class="nav-link text-light d-flex" href="#">
+                <a class="nav-link text-light d-flex" href="/logout">
                     <span class="material-icons">logout</span>
                     <span class="mx-2">Cerrar Sesión</span>
                 </a>
@@ -52,13 +43,12 @@
 </div>
 {% endblock %}
 
-{% block nav %}
+{% block nav %} <!-- Menú -->
 <div class="fondo vh-100">
     <div class="pt-3">
         <div class="sidebar-imagen">
             <a href="registrar-vehiculos">
-                <img src="{{ url_for('static', filename='images/logo-ULACIT_blanco.png')}}" width="200" height="70"
-                    alt="logo ulacit">
+                <img src="{{ url_for('static', filename='images/logo-ULACIT_blanco.png')}}" width="200" height="70" alt="logo ulacit">
             </a>
         </div>
         <ul class="nav flex-column">
@@ -70,7 +60,7 @@
                 <a class="nav-link text-light" href="/registrar-parqueos">Parqueos</a>
             </li>
             <li class="nav-item">
-                <a class="nav-link text-light" href="#">
+                <a class="nav-link text-light" href="/">
                     Vehículos
                 </a>
             </li>
@@ -78,21 +68,17 @@
         <ul class="nav flex-column">
             <h3 class="text-uppercase mt-5 text-light">Reportes</h3>
             <li class="nav-item">
-                <a class="nav-link active text-light" href="#">Reportes de ocupación</a>
+                <a class="nav-link active text-light" href="/">Reportes de ocupación</a>
             </li>
             <li class="nav-item">
-                <a class="nav-link text-light" href="#">
-                    Reportes de ingresos
-                </a>
+                <a class="nav-link text-light" href="/">Reportes de ingresos</a>
             </li>
             <li class="nav-item">
-                <a class="nav-link text-light" href="#">
-                    Reportes de aprobación
-                </a>
+                <a class="nav-link text-light" href="/">Reportes de aprobación</a>
             </li>
         </ul>
         <div class="fixed-bottom m-3">
-            <a class="nav-link text-light d-flex" href="/">
+            <a class="nav-link text-light d-flex" href="/logout">
                 <span class="material-icons">logout</span>
                 <span class="mx-2">Cerrar Sesión</span>
             </a>
@@ -101,12 +87,12 @@
 </div>
 {% endblock %}
 
-{% block reporte %}
+{% block reporte %} <!-- Nombre del tipo de registro -->
 registro de vehículos
 {% endblock %}
 
-{% block contenido %}
-<form class="mx-5 mt-6">
+{% block contenido %} <!-- Formulario para registrar vehículos -->
+<form class="mx-5 mt-6" method="POST">
     <div class="row">
         <div class="col">
             <h5>Marca</h5>
@@ -114,10 +100,7 @@ registro de vehículos
         </div>
         <div class="col">
             <h5>Tipo de vehículo</h5>
-            <select id="rol" name="rol" class="form-control form-control-lg">
-                <option>Moto</option>
-                <option>Carro</option>
-            </select>
+            <input id="tipoVehiculo" name="tipoVehiculo" type="text" class="form-control form-control-lg" placeholder="Tipo">
         </div>
     </div>
     <div class="row my-5">
@@ -127,7 +110,13 @@ registro de vehículos
         </div>
         <div class="col">
             <h5>Dueño</h5>
-            <input id="duenoVehiculo" name="duenoVehiculo" type="search" class="form-control form-control-lg" placeholder="Buscar...">
+            <select id="duenoVehiculo" name="duenoVehiculo" class="form-control form-control-lg">
+                {% for u in usuario %} 
+                    {% if u.rol != 'Administrador' and u.rol != 'Oficial'%} <!-- Agrega la id de los usuarios mientras no sean administradores ni oficiales -->
+                        <option>{{ u.id }}</option>
+                    {% endif %}
+                {% endfor %}
+            </select>
         </div>
     </div>
     <div class="row my-5">
@@ -137,12 +126,11 @@ registro de vehículos
         </div>
         <div class="col d-flex flex-row align-items-center">
             <h5>Espacio Ley 7600</h5>
-            <input class="mx-3 mb-2" type="checkbox">
+            <input id="espacioLey" name="espacioLey" class="mx-3 mb-2" type="checkbox">
         </div>
     </div>
     <div class="pt-5 mb-4 text-end">
-        <button id="btnRegVehiculos" name="btnRegVehiculos" class="btn btn-primary btn-lg btn-block"
-            type="button">Registrar</button>
+        <button id="btnRegVehiculos" name="btnRegVehiculos" class="btn btn-primary btn-lg btn-block" type="submit">Registrar</button>
     </div>
 </form>
 {% endblock %}
