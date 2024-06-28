@@ -100,7 +100,10 @@ registro de vehículos
         </div>
         <div class="col">
             <h5>Tipo de vehículo</h5>
-            <input id="tipoVehiculo" name="tipoVehiculo" type="text" class="form-control form-control-lg" placeholder="Tipo">
+            <select id="tipoVehiculo" name="tipoVehiculo" class="form-control form-control-lg">
+                <option>Carro</option>
+                <option>Moto</option>
+            </select>
         </div>
     </div>
     <div class="row my-5">
@@ -112,7 +115,7 @@ registro de vehículos
             <h5>Dueño</h5>
             <select id="duenoVehiculo" name="duenoVehiculo" class="form-control form-control-lg">
                 {% for u in usuario %} 
-                    {% if u.rol != 'Administrador' and u.rol != 'Oficial'%} <!-- Agrega la id de los usuarios mientras no sean administradores ni oficiales -->
+                    {% if u.rol != 'Administrador' and u.rol != 'Guarda'%} <!-- Agrega la id de los usuarios mientras no sean administradores ni oficiales -->
                         <option>{{ u.id }}</option>
                     {% endif %}
                 {% endfor %}

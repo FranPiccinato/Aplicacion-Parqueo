@@ -1,18 +1,26 @@
 from . import db
-from flask import flash, redirect, url_for
+from flask import flash, redirect, url_for, render_template
 from werkzeug.security import check_password_hash
 from flask_login import UserMixin, login_user # Métodos para manejar la gestión de sesiones y autenticación 
 
 class Usuario(db.Model, UserMixin): # Modelo SQLAlchemy para le estructura de la tabla
+    __tablename__ = 'usuario'
+   
     id = db.Column(db.Integer, primary_key=True)
+    
     nombre = db.Column(db.String(100))
     correo = db.Column(db.String(150), unique=True)
-    nCarne = db.Column(db.Integer)
+    nCarne = db.Column(db.Integer, nullable=True)
     fecha = db.Column(db.Date)
-    rol = db.Column(db.String(20))
+    rol = db.Column(db.String(50))
     contra = db.Column(db.String(150))
-    vehiculo = db.relationship('Vehiculo')
 
+    __mapper_args__ = {
+        'polymorphic_identity': 'usuario',
+        'polymorphic_on': 'rol'
+    }
+   
+   
     def loginUsuario(correo, contra):
         usuario = Usuario.query.filter_by(correo=correo).first() #Obtiene el primer usuario donde el correo sea igual al correo ingresado 
         if usuario: # Si existe
@@ -26,7 +34,7 @@ class Usuario(db.Model, UserMixin): # Modelo SQLAlchemy para le estructura de la
                         flash('En progreso', category='success')
                     elif usuario.rol == 'Administrador': # Si ingresa un Admin redirige a la pantalla del admin
                         return redirect(url_for('auth.registrarUsuarios'))
-                    elif usuario.rol == 'Oficial': 
+                    elif usuario.rol == 'Guarda': 
                         flash('En progreso', category='success')
             else:
                 flash('Contraseña incorrecta',  category='error')  
@@ -34,20 +42,126 @@ class Usuario(db.Model, UserMixin): # Modelo SQLAlchemy para le estructura de la
             flash('Correo incorrecto',  category='error')  
         return redirect(url_for('auth.login'))
     
-    def registrarUsuario(nombre, id, correo, nCarne, fecha, rol):
-        
+    def registrarUsuario(nombre, id, correo, nCarne, fecha, rol, self):
+        existeCorreo = Usuario.query.filter_by(correo=correo).first() 
+        existeCarne = Usuario.query.filter_by(nCarne=nCarne).first()
+        existeId = Usuario.query.filter_by(id=id).first()
+
         if len(nombre) < 2:
             flash('El nombre debe de contener más de 2 carácteres.',  category='error')
         elif len(correo) < 4:
             flash('El correo debe de contener más de 4 carácteres.',  category='error')
-            pass
+        elif existeCorreo:
+            flash(f'El correo {correo} ya está registrado',  category='error')
+        elif existeCarne and rol == "Estudiante":
+            flash(f'El número de carné {nCarne} ya está registrado',  category='error')
+        elif existeId:
+            flash(f'La identificación {id} ya está registrado',  category='error')
+        elif len(id) < 1:
+            flash('La cédula no puede quedar vacía',  category='error')
+        elif len(nCarne) < 1 and rol == 'Estudiante' :
+            flash('El número de carné no puede quedar vacío',  category='error')
+        elif len(nCarne) < 1 and rol != 'Estudiante':
+            flash('El número de carné es solo para el rol Estudiante',  category='error')
+        elif fecha == 0:
+            flash('La fecha no puede estar vacía',  category='error')
         else:
-            nuevoUsuario = Usuario(id=id, nombre=nombre, correo=correo, nCarne=nCarne, fecha= fecha, rol=rol, contra = 'Ulacit123') # Crea un nuevo usuario y pone la contraseña por default
+            nuevoUsuario = self(id=id, nombre=nombre, correo=correo, nCarne=nCarne, fecha= fecha, rol=rol, contra = 'Ulacit123') # Crea un nuevo usuario y pone la contraseña por default
             db.session.add(nuevoUsuario) # Se agrega a la base de datos
             db.session.commit()  # Hace un commit a la base de datos para guardar los datos
             flash('Cuenta creada con éxito.',  category='success')
-        return redirect(url_for('auth.registrarUsuarios'))
+            return redirect(url_for('auth.registrarUsuarios'))
+        return render_template("admin_usuarios.html")
 
+
+class Administrador(Usuario):
+    __tablename__ = 'administrador'
+    id = db.Column(db.Integer, db.ForeignKey('usuario.id'), primary_key=True)
+
+    __mapper_args__ = {
+        'polymorphic_identity': 'Administrador'
+    }
+
+    def registrarParqueo(nombre, capacidadES, capacidadMotos, capacidadLey):
+        existeParqueo= Usuario.query.filter_by(nombre=nombre).first() 
+
+        if len(nombre) < 2:
+            flash('El nombre debe de contener más de 2 carácteres.',  category='error')
+        elif existeParqueo:
+            flash(f'El parqueo {nombre} ya está registrado',  category='error')
+        else:
+            nuevoParqueo = Parqueo(nombre=nombre, capacidadES=capacidadES , capacidadMotos=capacidadMotos, capacidadLey= capacidadLey) # Crea un nuevo parqueo
+            db.session.add(nuevoParqueo)  # Se agrega a la base de datos
+            db.session.commit()  # Hace un commit a la base de datos para guardar los datos
+            flash('Parqueo creado con éxito.',  category='success')
+
+        return redirect(url_for('auth.registrarParqueos'))
+
+    def registrarVehiculo(marca, tipo, color, dueno, placa, espacio):
+
+        cont = 0
+        cantidad = Vehiculo.query.filter_by(dueno=dueno)
+        existePlaca= Vehiculo.query.filter_by(placa=placa).first() 
+
+        for c in cantidad:
+            cont += 1
+
+        print(cont)
+        
+        ley = False
+        if espacio == 'on': 
+            ley = True
+        else:
+            ley = False
+
+        if len(marca) < 2:
+            flash('La marca debe de contener más de 2 carácteres.',  category='error')
+        elif len(color) < 2:
+            flash('El color debe de contener más de 2 carácteres.',  category='error')
+        elif len(placa) < 2:
+            flash('La placa debe de contener más de 2 carácteres.',  category='error')    
+        elif len(dueno) < 2:
+            flash('El dueño debe de contener más de 2 carácteres.',  category='error')
+        elif cont == 2:
+             flash('El dueño ya tiene 2 carros registrados.',  category='error')   
+        elif existePlaca:
+             flash(f'La placa {placa} ya se encuentra registrada.',  category='error')   
+        else:
+            nuevoVehiculo = Vehiculo(marca=marca, tipo=tipo , color=color, dueno= dueno, placa = placa, espacio=ley, id_usuario = dueno) # Crea un nuevo vehículo
+            db.session.add(nuevoVehiculo) # Se agrega a la base de datos
+            db.session.commit() # Hace un commit a la base de datos para guardar los datos
+            flash('Vehículo creado con éxito.',  category='success')
+    
+            return redirect(url_for('auth.registrarVehiculos'))
+        return render_template("admin_vehiculos.html")
+    
+
+
+class Estudiante(Usuario):
+    __tablename__ = 'estudiante'
+    id = db.Column(db.Integer, db.ForeignKey('usuario.id'), primary_key=True)
+    vehiculo = db.relationship('Vehiculo')
+
+    __mapper_args__ = {
+        'polymorphic_identity': 'Estudiante'
+    }
+
+class PersonalAdmin(Usuario):
+    __tablename__ = 'personalAdmin'
+    id = db.Column(db.Integer, db.ForeignKey('usuario.id'), primary_key=True)
+    vehiculo = db.relationship('Vehiculo')
+
+    __mapper_args__ = {
+        'polymorphic_identity': 'Personal Administrativo'
+    }
+
+class Guarda(Usuario):
+    __tablename__ = 'guarda'
+    id = db.Column(db.Integer, db.ForeignKey('usuario.id'), primary_key=True)
+
+    __mapper_args__ = {
+        'polymorphic_identity': 'Guarda'
+    }
 
 
 class Parqueo(db.Model): # Modelo SQLAlchemy para le estructura de la tabla
@@ -56,17 +170,6 @@ class Parqueo(db.Model): # Modelo SQLAlchemy para le estructura de la tabla
     capacidadES = db.Column(db.Integer)
     capacidadMotos = db.Column(db.Integer)
     capacidadLey = db.Column(db.Integer)
-
-    def registrarParqueo(nombre, capacidadES, capacidadMotos, capacidadLey):
-        if len(nombre) < 2:
-            flash('El nombre debe de contener más de 2 carácteres.',  category='error')
-        else:
-            nuevoParqueo = Parqueo(nombre=nombre, capacidadES=capacidadES , capacidadMotos=capacidadMotos, capacidadLey= capacidadLey) # Crea un nuevo parqueo
-            db.session.add(nuevoParqueo)  # Se agrega a la base de datos
-            db.session.commit()  # Hace un commit a la base de datos para guardar los datos
-            flash('Parqueo creado con éxito.',  category='success')
-    
-        return redirect(url_for('auth.registrarParqueos'))
 
 
 
@@ -80,19 +183,3 @@ class Vehiculo(db.Model): # Modelo SQLAlchemy para le estructura de la tabla
     espacio = db.Column(db.Boolean)
     id_usuario = db.Column(db.Integer, db.ForeignKey('usuario.id'))
 
-    def registrarVehiculo(marca, tipo, color, dueno, placa, espacio):
-        ley = False
-        if espacio == 'on': 
-            ley = True
-        else:
-            ley = False
-
-        if len(marca) < 2:
-            flash('La marca debe de contener más de 2 carácteres.',  category='error')
-        else:
-            nuevoVehiculo = Vehiculo(marca=marca, tipo=tipo , color=color, dueno= dueno, placa = placa, espacio=ley, id_usuario = dueno) # Crea un nuevo vehículo
-            db.session.add(nuevoVehiculo) # Se agrega a la base de datos
-            db.session.commit() # Hace un commit a la base de datos para guardar los datos
-            flash('Vehículo creado con éxito.',  category='success')
-        
-        return redirect(url_for('auth.registrarVehiculos'))

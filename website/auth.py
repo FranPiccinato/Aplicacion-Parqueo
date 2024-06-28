@@ -1,7 +1,7 @@
 from flask import Blueprint, render_template, request, flash, redirect, url_for
 from werkzeug.security import generate_password_hash
 from flask_login import login_required, logout_user, current_user
-from .models import Usuario, Parqueo, Vehiculo
+from .models import Usuario, Administrador, Estudiante, PersonalAdmin, Guarda
 from . import db
 
 auth = Blueprint('auth', __name__)
@@ -26,8 +26,19 @@ def registrarUsuarios():
         nCarne = request.form.get('noUsuario')
         fecha = request.form.get('fechaUsuario')
         rol = request.form.get('rol')
-    
-        return Usuario.registrarUsuario(nombre, id, correo, nCarne, fecha, rol)
+
+        match rol:
+            case 'Administrador':
+                return Administrador.registrarUsuario(nombre, id, correo, nCarne, fecha, rol, Administrador)
+            
+            case 'Estudiante':
+                return Estudiante.registrarUsuario(nombre, id, correo, nCarne, fecha, rol, Estudiante)
+            
+            case 'Personal Administrativo':
+                return PersonalAdmin.registrarUsuario(nombre, id, correo, nCarne, fecha, rol, PersonalAdmin)
+            
+            case 'Guarda':
+                return Guarda.registrarUsuario(nombre, id, correo, nCarne, fecha, rol, Guarda)
 
     return render_template("admin_usuarios.html") # Carga admin_usuarios.html
 
@@ -39,7 +50,7 @@ def registrarParqueos():
         capacidadMotos = request.form.get('capacidadMoto')
         capacidadLey = request.form.get('capacidadLey')
 
-        return Parqueo.registrarParqueo(nombre, capacidadES, capacidadMotos, capacidadLey)
+        return Administrador.registrarParqueo(nombre, capacidadES, capacidadMotos, capacidadLey)
     
     return render_template("admin_parqueos.html") # Carga admin_parqueos.html
 
@@ -54,7 +65,7 @@ def registrarVehiculos():
         placa = request.form.get('noPlaca')
         espacio = request.form.get('espacioLey')
 
-        return Vehiculo.registrarVehiculo(marca, tipo, color, dueno, placa, espacio)
+        return Administrador.registrarVehiculo(marca, tipo, color, dueno, placa, espacio)
       
 
     return render_template("admin_vehiculos.html",  usuario= Usuario.query.all()) # Carga admin_vehículos.html y pasa la variable usuario para utilizarla en el archivo .html

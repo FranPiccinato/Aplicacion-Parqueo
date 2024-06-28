@@ -98,7 +98,7 @@ registro de usuarios
         </div>
         <div class="col">
             <h5>Identificación</h5>
-            <input id="idUsuario" name="idUsuario" type="number" class="form-control form-control-lg" placeholder="000000000" min="0" max="999999999">
+            <input id="idUsuario" name="idUsuario" type="number" class="form-control form-control-lg" placeholder="000000000" min="1">
         </div>
     </div>
     <div class="row my-5">
@@ -108,20 +108,21 @@ registro de usuarios
         </div>
         <div class="col">
             <h5>Número de Carné</h5>
-            <input id="noUsuario" name="noUsuario" type="number" class="form-control form-control-lg" placeholder="000000000" min="0" max="999999999">
+            <input id="noUsuario" name="noUsuario" type="number" class="form-control form-control-lg" placeholder="000000000" min="1">
         </div>
     </div>
     <div class="row my-5">
         <div class="col">
             <h5>Fecha de Nacimiento</h5>
-            <input id="fechaUsuario" name="fechaUsuario" type="date" class="form-control form-control-lg">
+            <input id="fechaUsuario" name="fechaUsuario" type="date" class="form-control form-control-lg" min="1924-01-01" max="2024-01-01">
         </div>
         <div class="col">
             <h5>Rol</h5>
             <select id="rol" name="rol" class="form-control form-control-lg">
                 <option>Estudiante</option>
-                <option>Oficial</option>
-                <option>Administrativo</option>
+                <option>Guarda</option>
+                <option>Personal Administrativo</option>
+                <option>Administrador</option>
             </select>
         </div>
     </div>
