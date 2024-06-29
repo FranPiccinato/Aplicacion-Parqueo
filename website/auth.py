@@ -18,15 +18,17 @@ def login():
     return render_template("/login.html") # Carga login.html
 
 @auth.route('/registrar-usuarios', methods=['GET', 'POST'])
+@login_required
 def registrarUsuarios():
+    esAdmin()
     if request.method == 'POST': 
         nombre = request.form.get('nombreUsuario') # Obtiene los valores del form
         id = request.form.get('idUsuario')
         correo = request.form.get('correoUsuario')
-        nCarne = request.form.get('noUsuario')
+        nCarne = request.form.get('nCarne')
         fecha = request.form.get('fechaUsuario')
         rol = request.form.get('rol')
-
+        
         match rol:
             case 'Administrador':
                 return Administrador.registrarUsuario(nombre, id, correo, nCarne, fecha, rol, Administrador)
@@ -43,7 +45,9 @@ def registrarUsuarios():
     return render_template("admin_usuarios.html") # Carga admin_usuarios.html
 
 @auth.route('/registrar-parqueos', methods=['GET', 'POST'])
+@login_required
 def registrarParqueos():
+    esAdmin()
     if request.method == 'POST':
         nombre = request.form.get('nombreParqueo') # Obtiene los valores del form
         capacidadES = request.form.get('capacidadES')
@@ -55,8 +59,9 @@ def registrarParqueos():
     return render_template("admin_parqueos.html") # Carga admin_parqueos.html
 
 @auth.route('/registrar-vehiculos', methods=['GET', 'POST'])
+@login_required
 def registrarVehiculos():
-
+    esAdmin()
     if request.method == 'POST':
         marca = request.form.get('marcaVehiculo') # Obtiene los valores del form
         tipo = request.form.get('tipoVehiculo')
@@ -71,7 +76,11 @@ def registrarVehiculos():
     return render_template("admin_vehiculos.html",  usuario= Usuario.query.all()) # Carga admin_vehículos.html y pasa la variable usuario para utilizarla en el archivo .html
 
 @auth.route('/cambio', methods=['GET', 'POST'])
+@login_required
 def cambioLogin():
+    if current_user.contra != 'Ulacit123':
+        flash('Acceso denegado', category='error')
+        return redirect(url_for('auth.logout'))
     if request.method == 'POST':
         nuevaContra = request.form.get('cambioContrasena') # Obtiene los valores del form
         contra = request.form.get('confirmarContrasena')
@@ -94,3 +103,9 @@ def cambioLogin():
 def logout():
     logout_user()
     return redirect(url_for('auth.login')) # Redirige a la pantalla de login 
+
+def esAdmin():
+    if current_user.rol != 'Administrador':
+        flash('Acceso denegado', category='error')
+        return redirect(url_for('auth.logout'))
+    

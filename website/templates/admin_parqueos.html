@@ -24,13 +24,13 @@
         <ul class="nav flex-column">
             <h3 class="text-uppercase mt-5 text-light">Reportes</h3>
             <li class="nav-item">
-                <a class="nav-link active text-light" href="/">Reportes de ocupación</a>
+                <a class="nav-link active text-light" href="#">Reportes de ocupación</a>
             </li>
             <li class="nav-item">
-                <a class="nav-link text-light" href="/">Reportes de ingresos</a>
+                <a class="nav-link text-light" href="#">Reportes de ingresos</a>
             </li>
             <li class="nav-item">
-                <a class="nav-link text-light" href="/">Reportes de aprobación</a>
+                <a class="nav-link text-light" href="#">Reportes de aprobación</a>
             </li>
             <li class="nav-item my-2">
                 <a class="nav-link text-light d-flex" href="/logout">
@@ -66,13 +66,13 @@
         <ul class="nav flex-column">
             <h3 class="text-uppercase mt-5 text-light">Reportes</h3>
             <li class="nav-item">
-                <a class="nav-link active text-light" href="/">Reportes de ocupación</a>
+                <a class="nav-link active text-light" href="#">Reportes de ocupación</a>
             </li>
             <li class="nav-item">
-                <a class="nav-link text-light" href="/">Reportes de ingresos</a>
+                <a class="nav-link text-light" href="#">Reportes de ingresos</a>
             </li>
             <li class="nav-item">
-                <a class="nav-link text-light" href="/">Reportes de aprobación</a>
+                <a class="nav-link text-light" href="#">Reportes de aprobación</a>
             </li>
         </ul>
         <div class="fixed-bottom m-3">
@@ -94,21 +94,21 @@ registro de parqueos
     <div class="row">
         <div class="col">
             <h5>Nombre</h5>
-            <input id="nombreParqueo" name="nombreParqueo" type="text" class="form-control form-control-lg" placeholder="Nombre">
+            <input id="nombreParqueo" name="nombreParqueo" type="text" class="form-control form-control-lg" placeholder="Nombre" value="{{ nombre }}" required>
         </div>
         <div class="col">
             <h5>Capacidad de Espacios Regulares</h5>
-            <input id="capacidadES" name="capacidadES" type="number" class="form-control form-control-lg" placeholder="0" min="1">
+            <input id="capacidadES" name="capacidadES" type="number" class="form-control form-control-lg" placeholder="0" min="1" value="{{ capacidadES }}" required>
         </div>
     </div>
     <div class="row my-5">
         <div class="col">
             <h5>Capacidad de Espacios Motos</h5>
-            <input id="capacidadMoto" name="capacidadMoto" type="number" class="form-control form-control-lg" placeholder="0"  min="1">
+            <input id="capacidadMoto" name="capacidadMoto" type="number" class="form-control form-control-lg" placeholder="0"  min="1" value="{{ capacidadMotos }}" required>
         </div>
         <div class="col">
             <h5>Capacidad de Espacios Ley 7600</h5>
-            <input id="capacidadLey" name="capacidadLey" type="number" class="form-control form-control-lg" placeholder="0"  min="1">
+            <input id="capacidadLey" name="capacidadLey" type="number" class="form-control form-control-lg" placeholder="0"  min="1" value="{{ capacidadLey }}" required>
         </div>
     </div>
     <div class="pt-5 mb-4 text-end">

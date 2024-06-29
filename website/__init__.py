@@ -4,13 +4,13 @@ from flask_login import LoginManager
 
 
 db = SQLAlchemy()
-DB_NAME = "Prueba" # Nombre de la base de datos de prueba CAMBIAR
+DB_NAME = "Prueba" 
 
 
 def create_app():
     app = Flask(__name__)
     app.config['SECRET_KEY'] = 'Grupo6'
-    app.config['SQLALCHEMY_DATABASE_URI'] = f'postgresql://fran:dbprueba@localhost:5432/{DB_NAME}' # Base de datos en postgresql 
+    app.config['SQLALCHEMY_DATABASE_URI'] = f'postgresql://fran:dbprueba@localhost:5432/{DB_NAME}' 
     
     db.init_app(app) # Inicialización de la base de datos
 
@@ -27,6 +27,7 @@ def create_app():
 
     login_manager = LoginManager() # Gestor de inicio de sesión
     login_manager.login_view = 'auth.login'
+    login_manager.login_message = 'Inicie sesión primero'
     login_manager.init_app(app)
 
     @login_manager.user_loader # Carga el usuario

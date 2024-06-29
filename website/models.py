@@ -2,6 +2,7 @@ from . import db
 from flask import flash, redirect, url_for, render_template
 from werkzeug.security import check_password_hash
 from flask_login import UserMixin, login_user # Métodos para manejar la gestión de sesiones y autenticación 
+from flask_sqlalchemy import SQLAlchemy
 
 class Usuario(db.Model, UserMixin): # Modelo SQLAlchemy para le estructura de la tabla
     __tablename__ = 'usuario'
@@ -10,7 +11,6 @@ class Usuario(db.Model, UserMixin): # Modelo SQLAlchemy para le estructura de la
     
     nombre = db.Column(db.String(100))
     correo = db.Column(db.String(150), unique=True)
-    nCarne = db.Column(db.Integer, nullable=True)
     fecha = db.Column(db.Date)
     rol = db.Column(db.String(50))
     contra = db.Column(db.String(150))
@@ -44,34 +44,28 @@ class Usuario(db.Model, UserMixin): # Modelo SQLAlchemy para le estructura de la
     
     def registrarUsuario(nombre, id, correo, nCarne, fecha, rol, self):
         existeCorreo = Usuario.query.filter_by(correo=correo).first() 
-        existeCarne = Usuario.query.filter_by(nCarne=nCarne).first()
         existeId = Usuario.query.filter_by(id=id).first()
 
+            
         if len(nombre) < 2:
             flash('El nombre debe de contener más de 2 carácteres.',  category='error')
         elif len(correo) < 4:
             flash('El correo debe de contener más de 4 carácteres.',  category='error')
         elif existeCorreo:
             flash(f'El correo {correo} ya está registrado',  category='error')
-        elif existeCarne and rol == "Estudiante":
-            flash(f'El número de carné {nCarne} ya está registrado',  category='error')
         elif existeId:
-            flash(f'La identificación {id} ya está registrado',  category='error')
+            flash(f'La identificación {id} ya está registrada',  category='error')
         elif len(id) < 1:
             flash('La cédula no puede quedar vacía',  category='error')
-        elif len(nCarne) < 1 and rol == 'Estudiante' :
-            flash('El número de carné no puede quedar vacío',  category='error')
-        elif len(nCarne) < 1 and rol != 'Estudiante':
+        elif nCarne != '':
             flash('El número de carné es solo para el rol Estudiante',  category='error')
-        elif fecha == 0:
-            flash('La fecha no puede estar vacía',  category='error')
         else:
-            nuevoUsuario = self(id=id, nombre=nombre, correo=correo, nCarne=nCarne, fecha= fecha, rol=rol, contra = 'Ulacit123') # Crea un nuevo usuario y pone la contraseña por default
+            nuevoUsuario = self(id=id, nombre=nombre, correo=correo, fecha= fecha, rol=rol, contra = 'Ulacit123') # Crea un nuevo usuario y pone la contraseña por default
             db.session.add(nuevoUsuario) # Se agrega a la base de datos
             db.session.commit()  # Hace un commit a la base de datos para guardar los datos
             flash('Cuenta creada con éxito.',  category='success')
             return redirect(url_for('auth.registrarUsuarios'))
-        return render_template("admin_usuarios.html")
+        return render_template("admin_usuarios.html", id=id, nombre=nombre, correo=correo, fecha= fecha, rol=rol )
 
 
 class Administrador(Usuario):
@@ -94,8 +88,9 @@ class Administrador(Usuario):
             db.session.add(nuevoParqueo)  # Se agrega a la base de datos
             db.session.commit()  # Hace un commit a la base de datos para guardar los datos
             flash('Parqueo creado con éxito.',  category='success')
+            return redirect(url_for('auth.registrarParqueos'))
 
-        return redirect(url_for('auth.registrarParqueos'))
+        return render_template("admin_parqueos.html", nombre=nombre, capacidadES=capacidadES , capacidadMotos=capacidadMotos, capacidadLey= capacidadLey)
 
     def registrarVehiculo(marca, tipo, color, dueno, placa, espacio):
 
@@ -105,8 +100,6 @@ class Administrador(Usuario):
 
         for c in cantidad:
             cont += 1
-
-        print(cont)
         
         ley = False
         if espacio == 'on': 
@@ -125,7 +118,7 @@ class Administrador(Usuario):
         elif cont == 2:
              flash('El dueño ya tiene 2 carros registrados.',  category='error')   
         elif existePlaca:
-             flash(f'La placa {placa} ya se encuentra registrada.',  category='error')   
+             flash(f'La placa {placa} ya se encuentra registrada.',  category='error')  
         else:
             nuevoVehiculo = Vehiculo(marca=marca, tipo=tipo , color=color, dueno= dueno, placa = placa, espacio=ley, id_usuario = dueno) # Crea un nuevo vehículo
             db.session.add(nuevoVehiculo) # Se agrega a la base de datos
@@ -133,18 +126,48 @@ class Administrador(Usuario):
             flash('Vehículo creado con éxito.',  category='success')
     
             return redirect(url_for('auth.registrarVehiculos'))
-        return render_template("admin_vehiculos.html")
+        return render_template("admin_vehiculos.html", marca=marca, tipo=tipo , color=color, dueno= dueno, placa = placa, espacio=ley, usuario= Usuario.query.all())
     
 
 
 class Estudiante(Usuario):
     __tablename__ = 'estudiante'
     id = db.Column(db.Integer, db.ForeignKey('usuario.id'), primary_key=True)
+    nCarne = db.Column(db.Integer)
     vehiculo = db.relationship('Vehiculo')
 
     __mapper_args__ = {
         'polymorphic_identity': 'Estudiante'
     }
+    def registrarUsuario(nombre, id, correo, nCarne, fecha, rol, self):
+        existeCarne = None
+        existeCorreo = Usuario.query.filter_by(correo=correo).first() 
+        existeId = Usuario.query.filter_by(id=id).first()
+
+        if nCarne != '':
+            existeCarne = Estudiante.query.filter_by(nCarne=nCarne).first()
+
+        if len(nombre) < 2:
+            flash('El nombre debe de contener más de 2 carácteres.',  category='error')
+        elif len(correo) < 4:
+            flash('El correo debe de contener más de 4 carácteres.',  category='error')
+        elif existeCorreo:
+            flash(f'El correo {correo} ya está registrado',  category='error')
+        elif existeCarne and rol == "Estudiante":
+            flash(f'El número de carné {nCarne} ya está registrado',  category='error')
+        elif existeId:
+            flash(f'La identificación {id} ya está registrada',  category='error')
+        elif len(id) < 1:
+            flash('La cédula no puede quedar vacía',  category='error')
+        elif nCarne == '':
+            flash('El número de carné no puede quedar vacío',  category='error')
+        else:
+            nuevoUsuario = self(id=id, nombre=nombre, correo=correo, nCarne=nCarne, fecha= fecha, rol=rol, contra = 'Ulacit123') # Crea un nuevo usuario y pone la contraseña por default
+            db.session.add(nuevoUsuario) # Se agrega a la base de datos
+            db.session.commit()  # Hace un commit a la base de datos para guardar los datos
+            flash('Cuenta creada con éxito.',  category='success')
+            return redirect(url_for('auth.registrarUsuarios'))
+        return render_template("admin_usuarios.html", id=id, nombre=nombre, correo=correo, nCarne=nCarne, fecha= fecha, rol=rol )
 
 class PersonalAdmin(Usuario):
     __tablename__ = 'personalAdmin'

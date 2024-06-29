@@ -24,13 +24,13 @@
         <ul class="nav flex-column">
             <h3 class="text-uppercase mt-5 text-light">Reportes</h3>
             <li class="nav-item">
-                <a class="nav-link active text-light" href="/">Reportes de ocupación</a>
+                <a class="nav-link active text-light" href="#">Reportes de ocupación</a>
             </li>
             <li class="nav-item">
-                <a class="nav-link text-light" href="/">Reportes de ingresos</a>
+                <a class="nav-link text-light" href="#">Reportes de ingresos</a>
             </li>
             <li class="nav-item">
-                <a class="nav-link text-light" href="/">Reportes de aprobación</a>
+                <a class="nav-link text-light" href="#">Reportes de aprobación</a>
             </li>
             <li class="nav-item my-2">
                 <a class="nav-link text-light d-flex" href="/logout">
@@ -66,13 +66,13 @@
         <ul class="nav flex-column">
             <h3 class="text-uppercase mt-5 text-light">Reportes</h3>
             <li class="nav-item">
-                <a class="nav-link active text-light" href="/">Reportes de ocupación</a>
+                <a class="nav-link active text-light" href="#">Reportes de ocupación</a>
             </li>
             <li class="nav-item">
-                <a class="nav-link text-light" href="/">Reportes de ingresos</a>
+                <a class="nav-link text-light" href="#">Reportes de ingresos</a>
             </li>
             <li class="nav-item">
-                <a class="nav-link text-light" href="/">Reportes de aprobación </a>
+                <a class="nav-link text-light" href="#">Reportes de aprobación </a>
             </li>
         </ul>
         <div class="fixed-bottom m-3">
@@ -94,35 +94,35 @@ registro de usuarios
     <div class="row">
         <div class="col">
             <h5>Nombre</h5>
-            <input id="nombreUsuario" name="nombreUsuario" type="text" class="form-control form-control-lg" placeholder="Nombre">
+            <input id="nombreUsuario" name="nombreUsuario" type="text" class="form-control form-control-lg" placeholder="Nombre" value="{{ nombre }}" required>
         </div>
         <div class="col">
             <h5>Identificación</h5>
-            <input id="idUsuario" name="idUsuario" type="number" class="form-control form-control-lg" placeholder="000000000" min="1">
+            <input id="idUsuario" name="idUsuario" type="number" class="form-control form-control-lg" placeholder="000000000" min="1"  value="{{ id }}"  required>
         </div>
     </div>
     <div class="row my-5">
         <div class="col">
             <h5>Correo</h5>
-            <input id="correoUsuario" name="correoUsuario" type="email" class="form-control form-control-lg" placeholder="Correo">
+            <input id="correoUsuario" name="correoUsuario" type="email" class="form-control form-control-lg" placeholder="Correo"  value="{{ correo }}"  required>
         </div>
         <div class="col">
             <h5>Número de Carné</h5>
-            <input id="noUsuario" name="noUsuario" type="number" class="form-control form-control-lg" placeholder="000000000" min="1">
+            <input id="nCarne" name="nCarne" type="number" class="form-control form-control-lg" placeholder="000000000" min="1"  value="{{ nCarne }}" >
         </div>
     </div>
     <div class="row my-5">
         <div class="col">
             <h5>Fecha de Nacimiento</h5>
-            <input id="fechaUsuario" name="fechaUsuario" type="date" class="form-control form-control-lg" min="1924-01-01" max="2024-01-01">
+            <input id="fechaUsuario" name="fechaUsuario" type="date" class="form-control form-control-lg" min="1924-01-01" max="2024-01-01"  value="{{ fecha }}"  required>
         </div>
         <div class="col">
             <h5>Rol</h5>
             <select id="rol" name="rol" class="form-control form-control-lg">
-                <option>Estudiante</option>
-                <option>Guarda</option>
-                <option>Personal Administrativo</option>
-                <option>Administrador</option>
+                <option {% if rol =='Estudiante' %} selected {% endif %} >Estudiante</option>
+                <option  {% if rol =='Guarda' %} selected {% endif %}>Guarda</option>
+                <option  {% if rol =='Personal Administrativo' %} selected {% endif %}>Personal Administrativo</option>
+                <option {% if rol =='Administrador' %} selected {% endif %} >Administrador</option>
             </select>
         </div>
     </div>
