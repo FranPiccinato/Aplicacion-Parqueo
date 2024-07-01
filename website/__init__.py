@@ -4,7 +4,7 @@ from flask_login import LoginManager
 
 
 db = SQLAlchemy()
-BD_NAME = "BD Parqueo" 
+BD_NAME = "AppParqueo" 
 user = "grupo6"
 password = "proyectoParqueo"
 server = "db-1.ct5z7jqqy8k7.us-east-1.rds.amazonaws.com"
@@ -12,7 +12,7 @@ server = "db-1.ct5z7jqqy8k7.us-east-1.rds.amazonaws.com"
 def create_app():
     app = Flask(__name__)
     app.config['SECRET_KEY'] = 'Grupo6'
-    app.config['SQLALCHEMY_DATABASE_URI'] = f'postgresql://fran:dbprueba@localhost:5432/prueba' 
+    app.config['SQLALCHEMY_DATABASE_URI'] = f'postgresql://{user}:{password}@{server}:5432/{BD_NAME}' 
     
     db.init_app(app) # Inicialización de la base de datos
 

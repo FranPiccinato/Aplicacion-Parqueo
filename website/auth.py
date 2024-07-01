@@ -1,4 +1,5 @@
 from flask import Blueprint, render_template, request, flash, redirect, url_for
+import re
 from werkzeug.security import generate_password_hash
 from flask_login import login_required, logout_user, current_user
 from .models import Usuario, Administrador, Estudiante, PersonalAdmin, Guarda
@@ -11,7 +12,6 @@ def login():
     if request.method == 'POST':
         correo = request.form.get('correo') # Obtiene los valores del form
         contra = request.form.get('contrasena')
-
         return Usuario.loginUsuario(correo, contra)
 
             
@@ -82,7 +82,13 @@ def cambioLogin():
         nuevaContra = request.form.get('cambioContrasena') # Obtiene los valores del form
         contra = request.form.get('confirmarContrasena')
         id = current_user.id
-        if len(nuevaContra) > 4:
+        if len(nuevaContra) < 5:
+            flash('La contraseña debe de ser mayor a 5 caracteres', category='error')
+        elif nuevaContra == 'Ulacit123':
+            flash('Elija otra contraseña', category='error')
+        elif not re.search(r'^(?=[^A-Z]*[A-Z])(?=[^0-9]*[0-9])', nuevaContra):
+            flash('La contraseña debe contener números y mayúsculas',  category='error')   
+        else:
             if nuevaContra == contra: # Verifica que las contraseñas sean iguales
                 usuario = Usuario.query.filter_by(id=id).first() # Obtiene el usuario 
                 usuario.contra = generate_password_hash(nuevaContra, method='pbkdf2:sha256') # Se hace un UPDATE de la contrasena y se utiliza un método para encriptar la contrasena
@@ -90,8 +96,6 @@ def cambioLogin():
                 return redirect(url_for('auth.login')) # Redirige a la pantalla de login 
             else:
                 flash('Las contraseñas no son iguales', category='error')
-        else:
-            flash('La contraseña debe de ser mayor a 4 caracteres', category='error')
         
     return render_template("cambioContra.html") # Carga cambioContra.html
 

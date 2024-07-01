@@ -1,4 +1,5 @@
 from . import db
+import re
 from flask import flash, redirect, url_for, render_template
 from werkzeug.security import check_password_hash
 from flask_login import UserMixin, login_user # Métodos para manejar la gestión de sesiones y autenticación 
@@ -7,11 +8,11 @@ class Usuario(db.Model, UserMixin): # Modelo SQLAlchemy para le estructura de la
 
     id = db.Column(db.Integer, primary_key=True)
     
-    nombre = db.Column(db.String(100))
+    nombre = db.Column(db.String(100), nullable=False)
     correo = db.Column(db.String(150), unique=True)
-    fecha = db.Column(db.Date)
-    rol = db.Column(db.String(50))
-    contra = db.Column(db.String(150))
+    fecha = db.Column(db.Date, nullable=False)
+    rol = db.Column(db.String(50), nullable=False)
+    contra = db.Column(db.String(150), nullable=False)
     nCarne = db.Column(db.Integer, nullable=True)
     vehiculo = db.relationship('Vehiculo')
       
@@ -33,8 +34,8 @@ class Usuario(db.Model, UserMixin): # Modelo SQLAlchemy para le estructura de la
             else:
                 flash('Contraseña incorrecta',  category='error')  
         else:
-            flash('Correo incorrecto',  category='error')  
-        return redirect(url_for('auth.login'))
+            flash('Correo incorrecto',  category='error') 
+        return render_template("login.html", correo=correo)
     
     def registrarUsuario(nombre, id, correo, nCarne, fecha, rol, self):
         existeCarne = None
@@ -45,10 +46,10 @@ class Usuario(db.Model, UserMixin): # Modelo SQLAlchemy para le estructura de la
         if nCarne != '':
             existeCarne = Usuario.query.filter_by(nCarne=nCarne).first()
             
-        if len(nombre) < 2:
-            flash('El nombre debe de contener más de 2 carácteres.',  category='error')
+        if len(nombre) < 1:
+            flash('El nombre debe de contener más de 1 carácter.',  category='error')
         elif len(correo) < 4:
-            flash('El correo debe de contener más de 4 carácteres.',  category='error')
+            flash('El correo debe de contener más de 4 caracteres.',  category='error')
         elif existeCorreo:
             flash(f'El correo {correo} ya está registrado',  category='error')
         elif existeCarne and rol == "Estudiante":
@@ -79,10 +80,10 @@ class Usuario(db.Model, UserMixin): # Modelo SQLAlchemy para le estructura de la
 class Administrador(Usuario):
 
     def registrarParqueo(nombre, capacidadES, capacidadMotos, capacidadLey):
-        existeParqueo= Usuario.query.filter_by(nombre=nombre).first() 
+        existeParqueo= Parqueo.query.filter_by(nombre=nombre).first() 
 
         if len(nombre) < 2:
-            flash('El nombre debe de contener más de 2 carácteres.',  category='error')
+            flash('El nombre debe de contener más de 2 caracteres.',  category='error')
         elif existeParqueo:
             flash(f'El parqueo {nombre} ya está registrado',  category='error')
         else:
@@ -97,7 +98,7 @@ class Administrador(Usuario):
     def registrarVehiculo(marca, tipo, color, dueno, placa, espacio):
 
         cont = 0
-        cantidad = Vehiculo.query.filter_by(dueno=dueno)
+        cantidad = Vehiculo.query.filter_by(id_usuario=dueno)
         existePlaca= Vehiculo.query.filter_by(placa=placa).first() 
 
         for c in cantidad:
@@ -110,25 +111,27 @@ class Administrador(Usuario):
             ley = False
 
         if len(marca) < 2:
-            flash('La marca debe de contener más de 2 carácteres.',  category='error')
+            flash('La marca debe de contener más de 2 caracteres.',  category='error')
         elif len(color) < 2:
-            flash('El color debe de contener más de 2 carácteres.',  category='error')
-        elif len(placa) < 3:
-            flash('La placa debe de contener más de 3 carácteres.',  category='error')    
-        elif len(dueno) < 2:
-            flash('El dueño debe de contener más de 2 carácteres.',  category='error')
+            flash('El color debe de contener más de 2 caracteres.',  category='error')
+        elif len(placa) < 1:
+            flash('La placa debe de contener más de 1 carácter.',  category='error')    
+        elif len(placa) > 10:
+            flash('La placa puede contener máximo 10 caracteres.',  category='error')
+        elif not re.search(r'^(?=[^A-Z]*[A-Z])(?=[^0-9]*[0-9])', placa):
+            flash('La placa solo puede contener números y letras',  category='error')      
         elif cont == 2:
              flash('El dueño ya tiene 2 carros registrados.',  category='error')   
         elif existePlaca:
              flash(f'La placa {placa} ya se encuentra registrada.',  category='error')  
         else:
-            nuevoVehiculo = Vehiculo(marca=marca, tipo=tipo , color=color, dueno= dueno, placa = placa, espacio=ley, id_usuario = dueno) # Crea un nuevo vehículo
+            nuevoVehiculo = Vehiculo(marca=marca, tipo=tipo , color=color, placa = placa, espacio=ley, id_usuario = dueno) # Crea un nuevo vehículo
             db.session.add(nuevoVehiculo) # Se agrega a la base de datos
             db.session.commit() # Hace un commit a la base de datos para guardar los datos
             flash('Vehículo creado con éxito.',  category='success')
     
             return redirect(url_for('auth.registrarVehiculos'))
-        return render_template("admin_vehiculos.html", marca=marca, tipo=tipo , color=color, dueno= dueno, placa = placa, espacio=ley, usuario= Usuario.query.all())
+        return render_template("admin_vehiculos.html", marca=marca, tipo=tipo , color=color, dueno=dueno, placa = placa, espacio=ley, usuario= Usuario.query.all())
     
 
 
@@ -149,20 +152,19 @@ class Guarda(Usuario):
 
 class Parqueo(db.Model): # Modelo SQLAlchemy para le estructura de la tabla
     id = db.Column(db.Integer, primary_key=True)
-    nombre = db.Column(db.String(150), unique=True)
-    capacidadES = db.Column(db.Integer)
-    capacidadMotos = db.Column(db.Integer)
-    capacidadLey = db.Column(db.Integer)
+    nombre = db.Column(db.String(150), unique=True, nullable=False)
+    capacidadES = db.Column(db.Integer, nullable=False)
+    capacidadMotos = db.Column(db.Integer, nullable=False)
+    capacidadLey = db.Column(db.Integer, nullable=False)
 
 
 
 class Vehiculo(db.Model): # Modelo SQLAlchemy para le estructura de la tabla
     id = db.Column(db.Integer, primary_key=True)
-    marca = db.Column(db.String(100))
-    tipo = db.Column(db.String(100))
-    color = db.Column(db.String(100))
-    dueno = db.Column(db.String(150))
-    placa = db.Column(db.String(100))
-    espacio = db.Column(db.Boolean)
+    marca = db.Column(db.String(100), nullable=False)
+    tipo = db.Column(db.String(100), nullable=False)
+    color = db.Column(db.String(100), nullable=False)
+    placa = db.Column(db.String(100), nullable=False)
+    espacio = db.Column(db.Boolean, nullable=False)
     id_usuario = db.Column(db.Integer, db.ForeignKey('usuario.id'))
 
