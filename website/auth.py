@@ -29,10 +29,7 @@ def registrarUsuarios():
         fecha = request.form.get('fechaUsuario')
         rol = request.form.get('rol')
         
-        match rol:
-            case 'Administrador':
-                return Administrador.registrarUsuario(nombre, id, correo, nCarne, fecha, rol, Administrador)
-            
+        match rol:    
             case 'Estudiante':
                 return Estudiante.registrarUsuario(nombre, id, correo, nCarne, fecha, rol, Estudiante)
             

@@ -114,7 +114,7 @@ registro de usuarios
     <div class="row my-5">
         <div class="col">
             <h5>Fecha de Nacimiento</h5>
-            <input id="fechaUsuario" name="fechaUsuario" type="date" class="form-control form-control-lg" min="1924-01-01" max="2024-01-01"  value="{{ fecha }}"  required>
+            <input id="fechaUsuario" name="fechaUsuario" type="date" class="form-control form-control-lg" min="1924-01-01"  value="{{ fecha }}"  required>
         </div>
         <div class="col">
             <h5>Rol</h5>
@@ -122,7 +122,6 @@ registro de usuarios
                 <option {% if rol =='Estudiante' %} selected {% endif %} >Estudiante</option>
                 <option  {% if rol =='Guarda' %} selected {% endif %}>Guarda</option>
                 <option  {% if rol =='Personal Administrativo' %} selected {% endif %}>Personal Administrativo</option>
-                <option {% if rol =='Administrador' %} selected {% endif %} >Administrador</option>
             </select>
         </div>
     </div>

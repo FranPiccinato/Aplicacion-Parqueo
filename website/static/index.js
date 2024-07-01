@@ -5,3 +5,19 @@ $(document).ready(function() {
         $(".alert").slideUp(500);
       });
 });
+
+//Función para que la fecha máxima sean personas 18+
+$(document).ready(function() {
+  var fecha = new Date();
+
+  var mes = fecha.getMonth() + 1;
+  var dia = fecha.getDate();
+  var anio = fecha.getFullYear() - 18;
+  if(mes < 10)
+      mes = '0' + mes;
+  if(dia < 10)
+      dia = '0' + dia;
+  
+  var fMax = anio + '-' + mes + '-' + dia;
+  $('#fechaUsuario').attr('max', fMax);
+});
