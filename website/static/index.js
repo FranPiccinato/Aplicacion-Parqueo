@@ -21,3 +21,8 @@ $(document).ready(function() {
   var fMax = anio + '-' + mes + '-' + dia;
   $('#fechaUsuario').attr('max', fMax);
 });
+
+$(".tarjeta").click(function() {
+  var id = $(this).attr("id");
+  window.location = "/ingreso-al-parqueo" + "/" + id;
+});

@@ -1,7 +1,7 @@
 from . import db
 import re
+from sqlalchemy import func
 from flask import flash, redirect, url_for, render_template
-from werkzeug.security import check_password_hash
 from flask_login import UserMixin, login_user # Métodos para manejar la gestión de sesiones y autenticación 
 
 class Usuario(db.Model, UserMixin): # Modelo SQLAlchemy para le estructura de la tabla
@@ -17,26 +17,29 @@ class Usuario(db.Model, UserMixin): # Modelo SQLAlchemy para le estructura de la
     vehiculo = db.relationship('Vehiculo')
       
     def loginUsuario(correo, contra):
-        usuario = Usuario.query.filter_by(correo=correo).first() #Obtiene el primer usuario donde el correo sea igual al correo ingresado 
+        usuario = Usuario.query.filter_by(correo=correo.lower()).first() #Obtiene el primer usuario donde el correo sea igual al correo ingresado 
         if usuario: # Si existe
-            if usuario.contra == contra or check_password_hash(usuario.contra, contra):
+            if usuario.contra == contra:
                 if usuario.contra == 'Ulacit123': # Si la contraseña es Ulacit123 redirige a la pantalla de cambio de contraseña
                     login_user(usuario, remember=True)
                     return redirect(url_for('auth.cambioLogin'))
                 else:
                     login_user(usuario, remember=True) # Recuerda el usuario que se encuentra ingresado
-                    if usuario.rol == 'Estudiante' or usuario.rol == 'Administrativo':
+                    if usuario.rol == 'Estudiante' or usuario.rol == 'Personal Administrativo':
                         flash('En progreso', category='success')
                     elif usuario.rol == 'Administrador': # Si ingresa un Admin redirige a la pantalla del admin
                         return redirect(url_for('auth.registrarUsuarios'))
                     elif usuario.rol == 'Guarda': 
-                        flash('En progreso', category='success')
+                        return redirect(url_for('auth.inicioParqueo'))
             else:
                 flash('Contraseña incorrecta',  category='error')  
         else:
-            flash('Correo incorrecto',  category='error') 
+            flash('Usuario incorrecto',  category='error') 
         return render_template("login.html", correo=correo)
-    
+
+
+class Administrador(Usuario):
+
     def registrarUsuario(nombre, id, correo, nCarne, fecha, rol, self):
         existeCarne = None
         existeCorreo = Usuario.query.filter_by(correo=correo).first() 
@@ -68,16 +71,13 @@ class Usuario(db.Model, UserMixin): # Modelo SQLAlchemy para le estructura de la
         else:
             nAccion = 1
         if nAccion == 1:
-            nuevoUsuario = self(id=id, nombre=nombre, correo=correo, nCarne=nCarne, fecha= fecha, rol=rol, contra = 'Ulacit123') # Crea un nuevo usuario y pone la contraseña por default
+            nuevoUsuario = self(id=id, nombre=nombre, correo=correo.lower(), nCarne=nCarne, fecha= fecha, rol=rol, contra = 'Ulacit123') # Crea un nuevo usuario y pone la contraseña por default
             db.session.add(nuevoUsuario) # Se agrega a la base de datos
             db.session.commit()  # Hace un commit a la base de datos para guardar los datos
             flash('Cuenta creada con éxito.',  category='success')
             return redirect(url_for('auth.registrarUsuarios'))
 
         return render_template("admin_usuarios.html", id=id, nombre=nombre, correo=correo, nCarne=nCarne, fecha=fecha, rol=rol )
-
-
-class Administrador(Usuario):
 
     def registrarParqueo(nombre, capacidadES, capacidadMotos, capacidadLey):
         existeParqueo= Parqueo.query.filter_by(nombre=nombre).first() 
@@ -87,7 +87,7 @@ class Administrador(Usuario):
         elif existeParqueo:
             flash(f'El parqueo {nombre} ya está registrado',  category='error')
         else:
-            nuevoParqueo = Parqueo(nombre=nombre, capacidadES=capacidadES , capacidadMotos=capacidadMotos, capacidadLey= capacidadLey) # Crea un nuevo parqueo
+            nuevoParqueo = Parqueo(nombre=nombre, capacidadRegulares=capacidadES , capacidadMotos=capacidadMotos, capacidadLey= capacidadLey) # Crea un nuevo parqueo
             db.session.add(nuevoParqueo)  # Se agrega a la base de datos
             db.session.commit()  # Hace un commit a la base de datos para guardar los datos
             flash('Parqueo creado con éxito.',  category='success')
@@ -153,7 +153,7 @@ class Guarda(Usuario):
 class Parqueo(db.Model): # Modelo SQLAlchemy para le estructura de la tabla
     id = db.Column(db.Integer, primary_key=True)
     nombre = db.Column(db.String(150), unique=True, nullable=False)
-    capacidadES = db.Column(db.Integer, nullable=False)
+    capacidadRegulares = db.Column(db.Integer, nullable=False)
     capacidadMotos = db.Column(db.Integer, nullable=False)
     capacidadLey = db.Column(db.Integer, nullable=False)
 

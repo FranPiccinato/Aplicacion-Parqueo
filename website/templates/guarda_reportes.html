@@ -1,0 +1,99 @@
+{% extends "base.html" %}
+{% block title %}Reporte de parqueo{% endblock %} <!-- El título de la pagina -->
+
+{% block navResponsive %} <!-- Menú responsive -->
+<div class="collapse collapse.show fondo d-lg-none" id="sidebar">
+    <div class="collapse-header">
+        <a href="/">
+            <img src="{{ url_for('static', filename='images/logo-ULACIT_blanco.png')}}" width="200" height="70" alt="Logo ulacit">
+        </a>
+    </div>
+    <div class="collapse-body">
+        <ul class="nav flex-column">
+            <h3 class="text-uppercase mt-3 text-light">Ingreso/Egreso</h3>
+            <li class="nav-item">
+                <a class="nav-link active text-light" href="/ingreso-al-parqueo/{{id}}">Ingresos</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link text-light" href="/egreso-parqueo/{{id}}">Egresos</a>
+            </li>
+        </ul>
+        <ul class="nav flex-column">
+            <h3 class="text-uppercase mt-5 text-light">Reportes</h3>
+            <li class="nav-item">
+                <a class="nav-link text-light" href="/reporte-ocupacion//{{id}}">Reportes de ocupación</a>
+            </li>
+            <li class="nav-item my-2">
+                <a class="nav-link text-light d-flex" href="/logout">
+                    <span class="material-icons">logout</span>
+                    <span class="mx-2">Cerrar Sesión</span>
+                </a>
+            </li>
+        </ul>
+    </div>
+</div>
+{% endblock %}
+
+{% block nav %} <!-- Menú -->
+<div class="fondo vh-100">
+    <div class="pt-3">
+        <div class="sidebar-imagen">
+            <a href="registrar-vehiculos">
+                <img src="{{ url_for('static', filename='images/logo-ULACIT_blanco.png')}}" width="200" height="70" alt="logo ulacit">
+            </a>
+        </div>
+        <ul class="nav flex-column">
+            <h3 class="text-uppercase mt-3 text-light">Ingreso/Egreso</h3>
+            <li class="nav-item">
+                <a class="nav-link active text-light" href="/ingreso-al-parqueo/{{id}}">Ingresos</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link text-light" href="/egreso-parqueo/{{id}}">Egresos</a>
+            </li>
+        </ul>
+        <ul class="nav flex-column">
+            <h3 class="text-uppercase mt-5 text-light">Reportes</h3>
+            <li class="nav-item">
+                <a class="nav-link active text-light" href="/reporte-ocupacion//{{id}}">Reportes de ocupación</a>
+            </li>
+        </ul>
+        <div class="fixed-bottom m-3">
+            <a class="nav-link text-light d-flex" href="/logout">
+                <span class="material-icons">logout</span>
+                <span class="mx-2">Cerrar Sesión</span>
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block reporte %} <!-- Nombre del parqueo  -->
+Reporte de ocupación del {{id}}
+{% endblock %}
+
+{% block contenido %} <!-- Ingreso de vehículos -->
+<table class="table table-striped" id="reporteGuarda">
+    <thead>
+      <tr>
+        <th scope="col">Placa</th>
+        <th scope="col">Fecha</th>
+        <th scope="col">Hora</th>
+        <th scope="col">Actividad</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <th scope="row">0000</th>
+        <td>09/07/2024</td>
+        <td>7:30 am</td>
+        <td>Ingreso</td>
+      </tr>
+      <tr>
+        <th scope="row">0001</th>
+        <td>09/07/2024</td>
+        <td>4:30 pm</td>
+        <td>Egreso</td>
+      </tr>
+    </tbody>
+  </table>
+{% endblock %}

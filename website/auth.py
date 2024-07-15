@@ -1,18 +1,19 @@
 from flask import Blueprint, render_template, request, flash, redirect, url_for
 import re
-from werkzeug.security import generate_password_hash
 from flask_login import login_required, logout_user, current_user
-from .models import Usuario, Administrador, Estudiante, PersonalAdmin, Guarda
+from .models import Usuario, Administrador, Parqueo
 from . import db
 
 auth = Blueprint('auth', __name__)
+
+# Inicio de sesión y admin
 
 @auth.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
         correo = request.form.get('correo') # Obtiene los valores del form
         contra = request.form.get('contrasena')
-        return Usuario.loginUsuario(correo, contra)
+        return Administrador.loginUsuario(correo, contra)
 
             
     return render_template("/login.html") # Carga login.html
@@ -31,13 +32,13 @@ def registrarUsuarios():
         
         match rol:    
             case 'Estudiante':
-                return Estudiante.registrarUsuario(nombre, id, correo, nCarne, fecha, rol, Estudiante)
+                return Administrador.registrarUsuario(nombre, id, correo, nCarne, fecha, rol, Usuario)
             
             case 'Personal Administrativo':
-                return PersonalAdmin.registrarUsuario(nombre, id, correo, nCarne, fecha, rol, PersonalAdmin)
+                return Administrador.registrarUsuario(nombre, id, correo, nCarne, fecha, rol, Usuario)
             
             case 'Guarda':
-                return Guarda.registrarUsuario(nombre, id, correo, nCarne, fecha, rol, Guarda)
+                return Administrador.registrarUsuario(nombre, id, correo, nCarne, fecha, rol, Usuario)
 
     return render_template("admin_usuarios.html") # Carga admin_usuarios.html
 
@@ -91,7 +92,7 @@ def cambioLogin():
         else:
             if nuevaContra == contra: # Verifica que las contraseñas sean iguales
                 usuario = Usuario.query.filter_by(id=id).first() # Obtiene el usuario 
-                usuario.contra = generate_password_hash(nuevaContra, method='pbkdf2:sha256') # Se hace un UPDATE de la contrasena y se utiliza un método para encriptar la contrasena
+                usuario.contra = nuevaContra # Se hace un UPDATE de la contrasena 
                 db.session.commit() # Hace un commit a la base de datos para guardar el cambio
                 return redirect(url_for('auth.login')) # Redirige a la pantalla de login 
             else:
@@ -110,3 +111,35 @@ def esAdmin():
         flash('Acceso denegado', category='error')
         return redirect(url_for('auth.logout'))
     
+
+# Guardas
+
+@auth.route('/vigilar-parqueo')
+@login_required
+def inicioParqueo():
+    esGuarda()
+    return render_template('guarda_inicio.html', parqueo = Parqueo.query.all())
+
+@auth.route('/ingreso-al-parqueo/<nombre>')
+@login_required
+def ingresoParqueo(nombre):
+    esGuarda()
+    return render_template('guarda_ingresos.html', id = nombre)
+
+
+@auth.route('/egreso-parqueo/<nombre>')
+@login_required
+def egresoParqueo(nombre):
+    esGuarda()
+    return render_template('guarda_egresos.html', id = nombre)
+
+@auth.route('/reporte-ocupacion/<nombre>')
+@login_required
+def reporteOcupacion(nombre):
+    esGuarda()
+    return render_template('guarda_reportes.html', id = nombre)
+
+def esGuarda():
+    if current_user.rol != 'Guarda':
+        flash('Acceso denegado', category='error')
+        return redirect(url_for('auth.logout'))

@@ -22,6 +22,14 @@ nav, .fondo, body{
     background-repeat: no-repeat;
 }
 
+.fondoParqueo{
+    background-image: url(./Images/patron-fondo.png), url(./Images/patron-fondo.png);
+    background-position: -70px -170px, 750px 420px;
+    background-size: 512px 593px;
+    background-repeat: no-repeat;
+}
+
+
 /* Botones */
 .btn-primary {
     background-color: #5C2B86 !important;
@@ -45,4 +53,20 @@ input[type=checkbox]{
 
 h3, h5{
     color: #5C2B86 !important;
+}
+
+thead th{
+    background-color: #5C2B86 !important;
+    color: whitesmoke !important;
+}
+
+.table-striped>tbody>tr:nth-child(odd)>td, 
+.table-striped>tbody>tr:nth-child(odd)>th {
+    background-color: #f1dfff;
+}
+
+/* Tarjetas de parqueo */
+
+.tarjeta:hover{
+    cursor:pointer;
 }

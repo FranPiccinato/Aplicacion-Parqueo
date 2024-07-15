@@ -1,0 +1,90 @@
+{% extends "base.html" %}
+{% block title %}Ingreso de vehículos{% endblock %} <!-- El título de la pagina -->
+
+{% block navResponsive %} <!-- Menú responsive -->
+<div class="collapse collapse.show fondo d-lg-none" id="sidebar">
+    <div class="collapse-header">
+        <a href="/">
+            <img src="{{ url_for('static', filename='images/logo-ULACIT_blanco.png')}}" width="200" height="70" alt="Logo ulacit">
+        </a>
+    </div>
+    <div class="collapse-body">
+        <ul class="nav flex-column">
+            <h3 class="text-uppercase mt-3 text-light">Ingreso/Egreso</h3>
+            <li class="nav-item">
+                <a class="nav-link active text-light" href="/ingreso-al-parqueo/{{id}}">Ingresos</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link text-light" href="/egreso-parqueo/{{id}}">Egresos</a>
+            </li>
+        </ul>
+        <ul class="nav flex-column">
+            <h3 class="text-uppercase mt-5 text-light">Reportes</h3>
+            <li class="nav-item">
+                <a class="nav-link text-light" href="/reporte-ocupacion/{{id}}">Reportes de ocupación</a>
+            </li>
+            <li class="nav-item my-2">
+                <a class="nav-link text-light d-flex" href="/logout">
+                    <span class="material-icons">logout</span>
+                    <span class="mx-2">Cerrar Sesión</span>
+                </a>
+            </li>
+        </ul>
+    </div>
+</div>
+{% endblock %}
+
+{% block nav %} <!-- Menú -->
+<div class="fondo vh-100">
+    <div class="pt-3">
+        <div class="sidebar-imagen">
+            <a href="registrar-vehiculos">
+                <img src="{{ url_for('static', filename='images/logo-ULACIT_blanco.png')}}" width="200" height="70" alt="logo ulacit">
+            </a>
+        </div>
+        <ul class="nav flex-column">
+            <h3 class="text-uppercase mt-3 text-light">Ingreso/Egreso</h3>
+            <li class="nav-item">
+                <a class="nav-link active text-light" href="/ingreso-al-parqueo/{{id}}">Ingresos</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link text-light" href="/egreso-parqueo/{{id}}">Egresos</a>
+            </li>
+        </ul>
+        <ul class="nav flex-column">
+            <h3 class="text-uppercase mt-5 text-light">Reportes</h3>
+            <li class="nav-item">
+                <a class="nav-link active text-light" href="/reporte-ocupacion/{{id}}">Reportes de ocupación</a>
+            </li>
+        </ul>
+        <div class="fixed-bottom m-3">
+            <a class="nav-link text-light d-flex" href="/logout">
+                <span class="material-icons">logout</span>
+                <span class="mx-2">Cerrar Sesión</span>
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block reporte %} <!-- Nombre del parqueo  -->
+Ingresos de vehiculos - {{id}}
+{% endblock %}
+
+{% block contenido %} <!-- Ingreso de vehículos -->
+<form class="mx-5 mt-2" method="POST">
+    <div class="row">
+        <div class="col mt-4">
+            <h5>Ingrese la placa del vehículo</h5>
+            <input id="placaVehiculo" name="placaVehiculo" type="text" class="form-control form-control-lg" placeholder="Placa" required>
+
+            <div class="pt-5 mb-4 text-end">
+                <button id="btnIngParqueo" name="btnIngParqueo" class="btn btn-primary btn-lg btn-block" type="submit">Ingresar</button>
+            </div>
+        </div>
+        <div class="col d-flex justify-content-end">
+            <img src="{{url_for('static', filename='images/semaforo.png')}}" alt="Un semáforo">
+        </div>
+    </div>
+</form>
+{% endblock %}
