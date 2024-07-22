@@ -137,7 +137,7 @@ class Administrador(Usuario):
         elif not re.search(r'^(?=[^A-Z]*[A-Z])(?=[^0-9]*[0-9])', placa):
             flash('La placa solo puede contener números y letras',  category='error')      
         elif cont == 2:
-             flash('El dueño ya tiene 2 carros registrados.',  category='error')   
+             flash('El dueño ya tiene 2 vehículos registrados.',  category='error')   
         elif existePlaca:
              flash(f'La placa {placa} ya se encuentra registrada.',  category='error')  
         else:
