@@ -39,7 +39,7 @@
                             {% for p in parqueo %}
                             <div class="col mt-5">
                                 <div class="card h-100 tarjeta" id="{{p.nombre}}">
-                                    <img src="{{ url_for('static', filename='images/Imagen-parqueos.jpg')}}" class="card-img-top" alt="Edificio ulacit">
+                                    <img id="{{p.id}}" src="{{ url_for('static', filename='images/Imagen-parqueos.jpg')}}" class="card-img-top" alt="Edificio ulacit">
                                     <div class="card-body">
                                     <h5 class="card-title text-center">{{ p.nombre }}</h5>
                                     </div>

@@ -12,16 +12,16 @@
         <ul class="nav flex-column">
             <h3 class="text-uppercase mt-3 text-light">Ingreso/Egreso</h3>
             <li class="nav-item">
-                <a class="nav-link active text-light" href="/ingreso-al-parqueo/{{id}}">Ingresos</a>
+                <a class="nav-link active text-light" href="/ingreso-al-parqueo/{{nombre}}&{{id}}">Ingresos</a>
             </li>
             <li class="nav-item">
-                <a class="nav-link text-light" href="/egreso-parqueo/{{id}}">Egresos</a>
+                <a class="nav-link text-light" href="/egreso-parqueo/{{nombre}}&{{id}}">Egresos</a>
             </li>
         </ul>
         <ul class="nav flex-column">
             <h3 class="text-uppercase mt-5 text-light">Reportes</h3>
             <li class="nav-item">
-                <a class="nav-link text-light" href="/reporte-ocupacion//{{id}}">Reportes de ocupación</a>
+                <a class="nav-link text-light" href="/reporte-ocupacion//{{nombre}}&{{id}}">Reportes de ocupación</a>
             </li>
             <li class="nav-item my-2">
                 <a class="nav-link text-light d-flex" href="/logout">
@@ -45,16 +45,16 @@
         <ul class="nav flex-column">
             <h3 class="text-uppercase mt-3 text-light">Ingreso/Egreso</h3>
             <li class="nav-item">
-                <a class="nav-link active text-light" href="/ingreso-al-parqueo/{{id}}">Ingresos</a>
+                <a class="nav-link active text-light" href="/ingreso-al-parqueo/{{nombre}}&{{id}}">Ingresos</a>
             </li>
             <li class="nav-item">
-                <a class="nav-link text-light" href="/egreso-parqueo/{{id}}">Egresos</a>
+                <a class="nav-link text-light" href="/egreso-parqueo/{{nombre}}&{{id}}">Egresos</a>
             </li>
         </ul>
         <ul class="nav flex-column">
             <h3 class="text-uppercase mt-5 text-light">Reportes</h3>
             <li class="nav-item">
-                <a class="nav-link active text-light" href="/reporte-ocupacion//{{id}}">Reportes de ocupación</a>
+                <a class="nav-link active text-light" href="/reporte-ocupacion/{{nombre}}&{{id}}">Reportes de ocupación</a>
             </li>
         </ul>
         <div class="fixed-bottom m-3">
@@ -68,32 +68,64 @@
 {% endblock %}
 
 {% block reporte %} <!-- Nombre del parqueo  -->
-Reporte de ocupación del {{id}}
+Reporte de ocupación del {{nombre}}
 {% endblock %}
 
 {% block contenido %} <!-- Ingreso de vehículos -->
+{% set totalOcupados  = namespace(value=0) %}
+{% set totalDisponibles  = namespace(value=0) %}
 <table class="table table-striped" id="reporteGuarda">
     <thead>
       <tr>
-        <th scope="col">Placa</th>
-        <th scope="col">Fecha</th>
-        <th scope="col">Hora</th>
-        <th scope="col">Actividad</th>
+        <th scope="col">Tipo de Espacio</th>
+        <th scope="col">Espacios Ocupados</th>
+        <th scope="col">Espacios Disponibles</th>
       </tr>
     </thead>
     <tbody>
-      <tr>
-        <th scope="row">0000</th>
-        <td>09/07/2024</td>
-        <td>7:30 am</td>
-        <td>Ingreso</td>
-      </tr>
-      <tr>
-        <th scope="row">0001</th>
-        <td>09/07/2024</td>
-        <td>4:30 pm</td>
-        <td>Egreso</td>
-      </tr>
+        {% for r in reporte %}
+            {% if r.id_parqueo | int == id | int%}
+                    {% set totalOcupados.value = totalOcupados.value + r.ocupados | int %}
+                    {% set totalDisponibles.value = totalDisponibles.value + r.disponibles | int %}
+                {% if r.vehiculo == "Carro" and r.espacio == True %}
+                    <tr>
+                        <th scope="row">Ley 7600</th>
+                        <td>{{r.ocupados}}</td>
+                        <td>{{r.disponibles}}</td>
+                    </tr>
+
+                {% elif r.vehiculo == "Carro" and r.espacio == False %}
+                    <tr>
+                        <th scope="row">Regulares</th>
+                        <td>{{r.ocupados}}</td>
+                        <td>{{r.disponibles}}</td>
+                    </tr>
+                {% else %}
+                    <tr>
+                        <th scope="row">Motos</th>
+                        <td>{{r.ocupados}}</td>
+                        <td>{{r.disponibles}}</td>
+                    </tr>
+                {% endif %}
+            {% endif %}
+      {% endfor %}
     </tbody>
   </table>
+  <div class="mt-4 pt-4">
+    <h3>Total</h3>
+    <table class="table table-striped" id="reporteGuarda">
+      <thead>
+        <tr>
+          <th scope="col">Ocupados</th>
+          <th scope="col">Disponibles</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr>
+              <td>{{ totalOcupados.value }}</td>
+              <td>{{ totalDisponibles.value }}</td>
+          </tr>
+      </tbody>
+    </table>
+  </div>
 {% endblock %}

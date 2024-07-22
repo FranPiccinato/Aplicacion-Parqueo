@@ -116,7 +116,7 @@ registro de vehículos
             <select id="duenoVehiculo" name="duenoVehiculo" class="form-control form-control-lg" required>
                 <!-- Agrega la id de los usuarios mientras no sean administradores ni oficiales -->
                 {% for u in usuario %}
-                    {% if u.rol != 'Administrador' and u.rol != 'Guarda'%} 
+                    {% if u.rol != 1 and u.rol != 2%} 
                         <option {% if dueno==u.id|string  %} selected {% endif %} >{{ u.id }}</option>
                     {% endif %}
                 {% endfor %}

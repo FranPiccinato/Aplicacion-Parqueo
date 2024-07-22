@@ -12,16 +12,16 @@
         <ul class="nav flex-column">
             <h3 class="text-uppercase mt-3 text-light">Ingreso/Egreso</h3>
             <li class="nav-item">
-                <a class="nav-link active text-light" href="/ingreso-al-parqueo/{{id}}">Ingresos</a>
+                <a class="nav-link active text-light" href="/ingreso-al-parqueo/{{nombre}}&{{id}}">Ingresos</a>
             </li>
             <li class="nav-item">
-                <a class="nav-link text-light" href="/egreso-parqueo/{{id}}">Egresos</a>
+                <a class="nav-link text-light" href="/egreso-parqueo/{{nombre}}&{{id}}">Egresos</a>
             </li>
         </ul>
         <ul class="nav flex-column">
             <h3 class="text-uppercase mt-5 text-light">Reportes</h3>
             <li class="nav-item">
-                <a class="nav-link text-light" href="/reporte-ocupacion/{{id}}">Reportes de aprobación</a>
+                <a class="nav-link text-light" href="/reporte-ocupacion/{{nombre}}&{{id}}">Reportes de aprobación</a>
             </li>
             <li class="nav-item my-2">
                 <a class="nav-link text-light d-flex" href="/logout">
@@ -45,16 +45,16 @@
         <ul class="nav flex-column">
             <h3 class="text-uppercase mt-3 text-light">Ingreso/Egreso</h3>
             <li class="nav-item">
-                <a class="nav-link active text-light" href="/ingreso-al-parqueo/{{id}}">Ingresos</a>
+                <a class="nav-link active text-light" href="/ingreso-al-parqueo/{{nombre}}&{{id}}">Ingresos</a>
             </li>
             <li class="nav-item">
-                <a class="nav-link text-light" href="/egreso-parqueo/{{id}}">Egresos</a>
+                <a class="nav-link text-light" href="/egreso-parqueo/{{nombre}}&{{id}}">Egresos</a>
             </li>
         </ul>
         <ul class="nav flex-column">
             <h3 class="text-uppercase mt-5 text-light">Reportes</h3>
             <li class="nav-item">
-                <a class="nav-link active text-light" href="/reporte-ocupacion/{{id}}">Reportes de ocupación</a>
+                <a class="nav-link active text-light" href="/reporte-ocupacion/{{nombre}}&{{id}}">Reportes de ocupación</a>
             </li>
         </ul>
         <div class="fixed-bottom m-3">
@@ -68,7 +68,7 @@
 {% endblock %}
 
 {% block reporte %} <!-- Nombre del parqueo  -->
-Egreso de vehiculos - {{id}}
+Egreso de vehiculos - {{nombre}}
 {% endblock %}
 
 {% block contenido %} <!-- Ingreso de vehículos -->

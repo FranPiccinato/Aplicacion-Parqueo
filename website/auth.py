@@ -1,8 +1,9 @@
 from flask import Blueprint, render_template, request, flash, redirect, url_for
 import re
 from flask_login import login_required, logout_user, current_user
-from .models import Usuario, Administrador, Parqueo
+from .models import Usuario, Administrador, Parqueo, Guarda, reporte_ocupacion
 from . import db
+from sqlalchemy import asc
 
 auth = Blueprint('auth', __name__)
 
@@ -107,7 +108,7 @@ def logout():
     return redirect(url_for('auth.login')) # Redirige a la pantalla de login 
 
 def esAdmin():
-    if current_user.rol != 'Administrador':
+    if current_user.rol != 1:
         flash('Acceso denegado', category='error')
         return redirect(url_for('auth.logout'))
     
@@ -118,28 +119,37 @@ def esAdmin():
 @login_required
 def inicioParqueo():
     esGuarda()
-    return render_template('guarda_inicio.html', parqueo = Parqueo.query.all())
+    return render_template('guarda_inicio.html', parqueo = Parqueo.query.order_by(asc(Parqueo.id)))
 
-@auth.route('/ingreso-al-parqueo/<nombre>')
+@auth.route('/ingreso-al-parqueo/<nombre>&<id>', methods=['GET', 'POST'])
 @login_required
-def ingresoParqueo(nombre):
+def ingresoParqueo(nombre, id):
     esGuarda()
-    return render_template('guarda_ingresos.html', id = nombre)
+    Guarda.informacionParqueo(id)
+    if request.method == 'POST':
+        placa = request.form.get('placaVehiculo')
+        return Guarda.ingresarPlaca(placa, id, nombre)
+
+    
+    return render_template('guarda_ingresos.html', nombre = nombre, id = id)
 
 
-@auth.route('/egreso-parqueo/<nombre>')
+@auth.route('/egreso-parqueo/<nombre>&<id>', methods=['GET', 'POST'])
 @login_required
-def egresoParqueo(nombre):
+def egresoParqueo(nombre, id):
     esGuarda()
-    return render_template('guarda_egresos.html', id = nombre)
+    if request.method == 'POST':
+        placa = request.form.get('placaVehiculo')
+        return Guarda.egresoVehiculos(placa, id, nombre)
+    return render_template('guarda_egresos.html', nombre = nombre, id = id)
 
-@auth.route('/reporte-ocupacion/<nombre>')
+@auth.route('/reporte-ocupacion/<nombre>&<id>')
 @login_required
-def reporteOcupacion(nombre):
+def reporteOcupacion(nombre, id):
     esGuarda()
-    return render_template('guarda_reportes.html', id = nombre)
+    return render_template('guarda_reportes.html', nombre = nombre, id = id, reporte = reporte_ocupacion.query.all())
 
 def esGuarda():
-    if current_user.rol != 'Guarda':
+    if current_user.rol != 2:
         flash('Acceso denegado', category='error')
         return redirect(url_for('auth.logout'))

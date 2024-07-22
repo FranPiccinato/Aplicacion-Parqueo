@@ -1,7 +1,7 @@
 
 // Función para esconder el mensaje de alerta luego de 3 segundos
 $(document).ready(function() {
-    $(".alert").fadeTo(3000, 500).slideUp(500, function() { 
+    $(".alert").fadeTo(4000, 500).slideUp(500, function() { 
         $(".alert").slideUp(500);
       });
 });
@@ -23,6 +23,21 @@ $(document).ready(function() {
 });
 
 $(".tarjeta").click(function() {
-  var id = $(this).attr("id");
-  window.location = "/ingreso-al-parqueo" + "/" + id;
+  var nombre = $(this).attr("id");
+  var id = $("img", this).attr("id");
+  window.location = "/ingreso-al-parqueo" + "/" + nombre + '&' + id;
+});
+
+$(document).ready(function() {
+  if($("#semaforo").attr('src') == '/static/images/semaforoVerde.png'){
+    $("#semaforo").fadeOut(7000, function(){
+      $("#semaforo").attr("src","../static/images/semaforo.png");
+      $("#semaforo").fadeIn()
+    });
+  }else if($("#semaforo").attr('src') == '/static/images/semaforoRojo.png'){
+    $("#semaforo").fadeOut(7000, function(){
+      $("#semaforo").attr("src","../static/images/semaforo.png");
+      $("#semaforo").fadeIn()
+    });
+  }
 });

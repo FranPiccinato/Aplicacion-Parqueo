@@ -12,16 +12,16 @@
         <ul class="nav flex-column">
             <h3 class="text-uppercase mt-3 text-light">Ingreso/Egreso</h3>
             <li class="nav-item">
-                <a class="nav-link active text-light" href="/ingreso-al-parqueo/{{id}}">Ingresos</a>
+                <a class="nav-link active text-light" href="/ingreso-al-parqueo/{{nombre}}&{{id}}">Ingresos</a>
             </li>
             <li class="nav-item">
-                <a class="nav-link text-light" href="/egreso-parqueo/{{id}}">Egresos</a>
+                <a class="nav-link text-light" href="/egreso-parqueo/{{nombre}}&{{id}}">Egresos</a>
             </li>
         </ul>
         <ul class="nav flex-column">
             <h3 class="text-uppercase mt-5 text-light">Reportes</h3>
             <li class="nav-item">
-                <a class="nav-link text-light" href="/reporte-ocupacion/{{id}}">Reportes de ocupación</a>
+                <a class="nav-link text-light" href="/reporte-ocupacion/{{nombre}}&{{id}}">Reportes de ocupación</a>
             </li>
             <li class="nav-item my-2">
                 <a class="nav-link text-light d-flex" href="/logout">
@@ -45,16 +45,16 @@
         <ul class="nav flex-column">
             <h3 class="text-uppercase mt-3 text-light">Ingreso/Egreso</h3>
             <li class="nav-item">
-                <a class="nav-link active text-light" href="/ingreso-al-parqueo/{{id}}">Ingresos</a>
+                <a class="nav-link active text-light" href="/ingreso-al-parqueo/{{nombre}}&{{id}}">Ingresos</a>
             </li>
             <li class="nav-item">
-                <a class="nav-link text-light" href="/egreso-parqueo/{{id}}">Egresos</a>
+                <a class="nav-link text-light" href="/egreso-parqueo/{{nombre}}&{{id}}">Egresos</a>
             </li>
         </ul>
         <ul class="nav flex-column">
             <h3 class="text-uppercase mt-5 text-light">Reportes</h3>
             <li class="nav-item">
-                <a class="nav-link active text-light" href="/reporte-ocupacion/{{id}}">Reportes de ocupación</a>
+                <a class="nav-link active text-light" href="/reporte-ocupacion/{{nombre}}&{{id}}">Reportes de ocupación</a>
             </li>
         </ul>
         <div class="fixed-bottom m-3">
@@ -68,7 +68,7 @@
 {% endblock %}
 
 {% block reporte %} <!-- Nombre del parqueo  -->
-Ingresos de vehiculos - {{id}}
+Ingresos de vehiculos - {{nombre}}
 {% endblock %}
 
 {% block contenido %} <!-- Ingreso de vehículos -->
@@ -77,13 +77,18 @@ Ingresos de vehiculos - {{id}}
         <div class="col mt-4">
             <h5>Ingrese la placa del vehículo</h5>
             <input id="placaVehiculo" name="placaVehiculo" type="text" class="form-control form-control-lg" placeholder="Placa" required>
-
             <div class="pt-5 mb-4 text-end">
                 <button id="btnIngParqueo" name="btnIngParqueo" class="btn btn-primary btn-lg btn-block" type="submit">Ingresar</button>
             </div>
         </div>
         <div class="col d-flex justify-content-end">
-            <img src="{{url_for('static', filename='images/semaforo.png')}}" alt="Un semáforo">
+            {% if imagen == 'semaforoVerde.png' %}
+                <img  id="semaforo"  src="{{url_for('static', filename='images/semaforoVerde.png')}}" alt="Un semáforo"/>
+            {% elif imagen == 'semaforoRojo.png' %}
+                <img  id="semaforo"  src="{{url_for('static', filename='images/semaforoRojo.png')}}" alt="Un semáforo"/>
+            {% else %}
+                <img  id="semaforo"  src="{{url_for('static', filename='images/semaforo.png')}}" alt="Un semáforo"/>
+            {% endif %}
         </div>
     </div>
 </form>
