@@ -1,10 +1,12 @@
 from . import db
 import re
-from sqlalchemy import desc
 from flask import flash, redirect, url_for, render_template
+from sqlalchemy_utils import create_view
+from sqlalchemy import select, func
+from sqlalchemy.sql import and_, or_
 from datetime import datetime
-import time
 from flask_login import UserMixin, login_user # Métodos para manejar la gestión de sesiones y autenticación 
+
 
 class Usuario(db.Model, UserMixin): # Modelo SQLAlchemy para le estructura de la tabla
 
@@ -162,277 +164,87 @@ class PersonalAdmin(Usuario):
     
 
 class Guarda(Usuario):
-
-    def informacionParqueo(idparqueo):
-        reporteLey = reporte_ocupacion.query.filter(reporte_ocupacion.id_parqueo == int(idparqueo), reporte_ocupacion.vehiculo.like("Carro"), reporte_ocupacion.espacio.is_(True)).first()
-        reporteR = reporte_ocupacion.query.filter(reporte_ocupacion.id_parqueo == int(idparqueo), reporte_ocupacion.vehiculo.like("Carro"), reporte_ocupacion.espacio.is_(False)).first()
-        reporteM = reporte_ocupacion.query.filter(reporte_ocupacion.id_parqueo == int(idparqueo), reporte_ocupacion.vehiculo.like("Moto"), reporte_ocupacion.espacio.is_(False)).first()
-        parqueo = Parqueo.query.filter_by(id=idparqueo).first()
-
-        if not reporteLey and not reporteR and not reporteM:
-            nuevoLey = reporte_ocupacion(id_parqueo = parqueo.id, vehiculo = "Carro", espacio = True, ocupados = 0, disponibles = parqueo.capacidad_ley) 
-            nuevoR = reporte_ocupacion(id_parqueo = parqueo.id, vehiculo = "Carro", espacio = False, ocupados = 0, disponibles = parqueo.capacidad_regulares) 
-            nuevoM = reporte_ocupacion(id_parqueo = parqueo.id, vehiculo = "Moto", espacio = False, ocupados = 0, disponibles = parqueo.capacidad_motos) 
-            db.session.add(nuevoLey)
-            db.session.add(nuevoR) 
-            db.session.add(nuevoM) 
-            db.session.commit() 
-            
-    def ingresarPlaca(placa, idparqueo, nombre):
-        reporteLey = reporte_ocupacion.query.filter(reporte_ocupacion.id_parqueo == int(idparqueo), reporte_ocupacion.vehiculo.like("Carro"), reporte_ocupacion.espacio.is_(True)).first()
-        reporteR = reporte_ocupacion.query.filter(reporte_ocupacion.id_parqueo == int(idparqueo), reporte_ocupacion.vehiculo.like("Carro"), reporte_ocupacion.espacio.is_(False)).first()
-        reporteM = reporte_ocupacion.query.filter(reporte_ocupacion.id_parqueo == int(idparqueo), reporte_ocupacion.vehiculo.like("Moto"), reporte_ocupacion.espacio.is_(False)).first()
-
+    def ingresarPlaca(nombre, idparqueo, placa): 
         vehiculo = Vehiculo.query.filter_by(placa=placa.upper()).first()
-        ingresos = Actividad.query.filter(Actividad.id_placa.like(placa.upper()), Actividad.actividad.like("Ingreso")).order_by(desc(Actividad.fecha)).first()
-        egresos = Actividad.query.filter(Actividad.id_placa.like(placa.upper()), Actividad.actividad.like("Egreso")).order_by(desc(Actividad.fecha)).first()
-
+        ultimaEntrada = view_entradas.query.filter_by(id_placa = placa.upper()).first()
+        espaciosOcupados = None
         fecha = datetime.today()
 
         if vehiculo:
-
-            if vehiculo.espacio and reporteLey.disponibles > 0:
-
-                if reporteLey.disponibles == 0:
-                    flash('Los espacios ley 7600 están llenos',  category='error')
-                    return render_template("guarda_ingresos.html", imagen = "semaforoRojo.png", nombre=nombre, id=idparqueo)
-                if not ingresos:
-                        nuevoIngreso = Actividad(fecha= fecha, actividad = "Ingreso", id_placa = placa.upper(), id_parqueo = idparqueo, id_usuario = vehiculo.id_usuario) # Nuevo ingreso
-                        db.session.add(nuevoIngreso) # Se agrega a la base de datos
-                        db.session.commit() # Hace un commit a la base de datos para guardar los datos
-                        flash('El vehículo puede ingresar',  category='success')
-
-                        setattr(reporteLey, 'ocupados', reporteLey.ocupados + 1)
-                        setattr(reporteLey, 'disponibles', reporteLey.disponibles - 1)
-                        db.session.commit()
-                        return render_template("guarda_ingresos.html", imagen = "semaforoVerde.png", nombre=nombre, id=idparqueo)
-                if  int(ingresos.id_parqueo) != int(idparqueo):
-                    flash('Placa equivocada',  category='error')
-                    return render_template("guarda_ingresos.html", imagen = "semaforo.png", nombre=nombre, id=idparqueo)
-                elif egresos:
-                    if egresos.fecha >= ingresos.fecha:
-                        nuevoIngreso = Actividad(fecha= fecha, actividad = "Ingreso", id_placa = placa.upper(), id_parqueo = idparqueo, id_usuario = vehiculo.id_usuario) # Nuevo ingreso
-                        db.session.add(nuevoIngreso) # Se agrega a la base de datos
-                        db.session.commit() # Hace un commit a la base de datos para guardar los datos
-                        flash('El vehículo puede ingresar',  category='success')
-
-                        setattr(reporteLey, 'ocupados', reporteLey.ocupados + 1)
-                        setattr(reporteLey, 'disponibles', reporteLey.disponibles - 1)
-                        db.session.commit()
-                        return render_template("guarda_ingresos.html", imagen = "semaforoVerde.png", nombre=nombre, id=idparqueo)
-                else:
-                    flash('El vehículo aún se encuentra en el parqueo',  category='error')
-                    return render_template("guarda_ingresos.html", imagen = "semaforo.png", nombre=nombre, id=idparqueo)
-               
-            elif not vehiculo.espacio and vehiculo.tipo == "Carro" and reporteR.disponibles > 0:
-
-                if reporteR.disponibles == 0:
-                    flash('Los espacios regulares están llenos',  category='error')
-                    return render_template("guarda_ingresos.html", imagen = "semaforoRojo.png", nombre=nombre, id=idparqueo)
-                
-                if not ingresos:
-                        nuevoIngreso = Actividad(fecha= fecha, actividad = "Ingreso", id_placa = placa.upper(), id_parqueo = idparqueo, id_usuario = vehiculo.id_usuario) # Nuevo ingreso
-                        db.session.add(nuevoIngreso) # Se agrega a la base de datos
-                        db.session.commit() # Hace un commit a la base de datos para guardar los datos
-                        flash('El vehículo puede ingresar',  category='success')
-
-                        setattr(reporteR, 'ocupados', reporteR.ocupados + 1)
-                        setattr(reporteR, 'disponibles', reporteR.disponibles - 1)
-                        db.session.commit()
-                        return render_template("guarda_ingresos.html", imagen = "semaforoVerde.png", nombre=nombre, id=idparqueo)
-                if  int(ingresos.id_parqueo) != int(idparqueo):
-                    flash('Placa equivocada',  category='error')
-                    return render_template("guarda_ingresos.html", imagen = "semaforo.png", nombre=nombre, id=idparqueo)
-                elif egresos:
-                    if egresos.fecha  >= ingresos.fecha:
-                        nuevoIngreso = Actividad(fecha= fecha, actividad = "Ingreso", id_placa = placa.upper(), id_parqueo = idparqueo, id_usuario = vehiculo.id_usuario) # Nuevo ingreso
-                        db.session.add(nuevoIngreso) # Se agrega a la base de datos
-                        db.session.commit() # Hace un commit a la base de datos para guardar los datos
-                        flash('El vehículo puede ingresar',  category='success')
-
-                        setattr(reporteM, 'ocupados', reporteM.ocupados + 1)
-                        setattr(reporteM, 'disponibles', reporteM.disponibles - 1)
-                        db.session.commit()
-                        return render_template("guarda_ingresos.html", imagen = "semaforoVerde.png", nombre=nombre, id=idparqueo)
-                else:
-                    flash('El vehículo aún se encuentra en el parqueo',  category='error')
-                    return render_template("guarda_ingresos.html", imagen = "semaforo.png", nombre=nombre, id=idparqueo)
-           
-           
-            elif not vehiculo.espacio and vehiculo.tipo == "Moto" and reporteM.disponibles > 0:
-                if reporteM.disponibles == 0:
-                    flash('Los espacios para motos están llenos',  category='error')
-                    return render_template("guarda_ingresos.html", imagen = "semaforoRojo.png", nombre=nombre, id=idparqueo)
-                if not ingresos:
-                        nuevoIngreso = Actividad(fecha= fecha, actividad = "Ingreso", id_placa = placa.upper(), id_parqueo = idparqueo, id_usuario = vehiculo.id_usuario) # Nuevo ingreso
-                        db.session.add(nuevoIngreso) # Se agrega a la base de datos
-                        db.session.commit() # Hace un commit a la base de datos para guardar los datos
-                        flash('El vehículo puede ingresar',  category='success')
-
-                        setattr(reporteLey, 'ocupados', reporteLey.ocupados + 1)
-                        setattr(reporteLey, 'disponibles', reporteLey.disponibles - 1)
-                        db.session.commit()
-                        return render_template("guarda_ingresos.html", imagen = "semaforoVerde.png", nombre=nombre, id=idparqueo)
-                if  int(ingresos.id_parqueo) != int(idparqueo):
-                    flash('Placa equivocada',  category='error')
-                    return render_template("guarda_ingresos.html", imagen = "semaforo.png", nombre=nombre, id=idparqueo)
-                elif egresos:
-                    if egresos.fecha  >= ingresos.fecha:
-                        nuevoIngreso = Actividad(fecha= fecha, actividad = "Ingreso", id_placa = placa.upper(), id_parqueo = idparqueo, id_usuario = vehiculo.id_usuario) # Nuevo ingreso
-                        db.session.add(nuevoIngreso) # Se agrega a la base de datos
-                        db.session.commit() # Hace un commit a la base de datos para guardar los datos
-                        flash('El vehículo puede ingresar',  category='success')
-
-                        setattr(reporteLey, 'ocupados', reporteLey.ocupados + 1)
-                        setattr(reporteLey, 'disponibles', reporteLey.disponibles - 1)
-                        db.session.commit()
-                        return render_template("guarda_ingresos.html", imagen = "semaforoVerde.png", nombre=nombre, id=idparqueo)
-                else:
-                    flash('El vehículo aún se encuentra en el parqueo',  category='error')
-                    return render_template("guarda_ingresos.html", imagen = "semaforo.png", nombre=nombre, id=idparqueo) 
- 
-        else:
-            # if + 1 ingreso fallido
-            # si falla razon 
-            flash('El vehículo no se encuentra registrado',  category='error')
-            return render_template("guarda_ingresos.html", imagen = "semaforoRojo.png", nombre=nombre, id=idparqueo)
-   
-   
-    def egresoVehiculos(placa, idparqueo, nombre):
-        reporteLey = reporte_ocupacion.query.filter(reporte_ocupacion.id_parqueo == int(idparqueo), reporte_ocupacion.vehiculo.like("Carro"), reporte_ocupacion.espacio.is_(True)).first()
-        reporteR = reporte_ocupacion.query.filter(reporte_ocupacion.id_parqueo == int(idparqueo), reporte_ocupacion.vehiculo.like("Carro"), reporte_ocupacion.espacio.is_(False)).first()
-        reporteM = reporte_ocupacion.query.filter(reporte_ocupacion.id_parqueo == int(idparqueo), reporte_ocupacion.vehiculo.like("Moto"), reporte_ocupacion.espacio.is_(False)).first()
-
-        vehiculo = Vehiculo.query.filter_by(placa=placa.upper()).first()
-        ingresos = Actividad.query.filter(Actividad.id_placa.like(placa.upper()), Actividad.actividad.like("Ingreso")).order_by(desc(Actividad.fecha)).first()
-        egresos = Actividad.query.filter(Actividad.id_placa.like(placa.upper()), Actividad.actividad.like("Egreso")).order_by(desc(Actividad.fecha)).first()
-
-        fecha = datetime.today()
-        if vehiculo:
-            if vehiculo.espacio and reporteLey.ocupados > 0:
-
-                if reporteLey.ocupados == 0:
-                    flash('No se encuentran vehículos en los espacios 7600',  category='error')
-                    return render_template("guarda_egresos.html", nombre=nombre, id=idparqueo)
-
-                if not egresos and int(ingresos.id_parqueo) == int(idparqueo):
-                        nuevoEgreso = Actividad(fecha= fecha, actividad = "Egreso", id_placa = placa.upper(), id_parqueo = idparqueo, id_usuario = vehiculo.id_usuario) # Nuevo ingreso
-                        db.session.add(nuevoEgreso) # Se agrega a la base de datos
-                        db.session.commit() # Hace un commit a la base de datos para guardar los datos
-                        flash('El vehículo ha salido del parqueo',  category='success')
-
-                        setattr(reporteLey, 'ocupados', reporteLey.ocupados - 1)
-                        setattr(reporteLey, 'disponibles', reporteLey.disponibles + 1)
-                        db.session.commit()
-                        return render_template("guarda_egresos.html", nombre=nombre, id=idparqueo)
-                if  int(ingresos.id_parqueo) != int(idparqueo):
-                    flash('Placa equivocada',  category='error')
-                    return render_template("guarda_egresos.html", nombre=nombre, id=idparqueo)
-                elif ingresos:
-                    if ingresos.fecha  >= egresos.fecha:
-                        nuevoEgreso = Actividad(fecha= fecha, actividad = "Egreso", id_placa = placa.upper(), id_parqueo = idparqueo, id_usuario = vehiculo.id_usuario) # Nuevo ingreso
-                        db.session.add(nuevoEgreso) # Se agrega a la base de datos
-                        db.session.commit() # Hace un commit a la base de datos para guardar los datos
-                        flash('El vehículo ha salido del parqueo',  category='success')
-
-                        setattr(reporteLey, 'ocupados', reporteLey.ocupados - 1)
-                        setattr(reporteLey, 'disponibles', reporteLey.disponibles + 1)
-                        db.session.commit()
-                        return render_template("guarda_egresos.html", nombre=nombre, id=idparqueo)
-                else:
-                    flash('El vehículo no se encuentra en el parqueo',  category='error')
-                    return render_template("guarda_egresos.html", nombre=nombre, id=idparqueo)
-               
-            elif not vehiculo.espacio and vehiculo.tipo == "Carro" and reporteR.ocupados > 0:
-
-                if reporteR.ocupados == 0:
-                    flash('No se encuentran vehículos en los espacios regulares',  category='error')
-                    return render_template("guarda_egresos.html", nombre=nombre, id=idparqueo)
-
-                if not egresos and  int(ingresos.id_parqueo) == int(idparqueo):
-                        nuevoEgreso = Actividad(fecha= fecha, actividad = "Egreso", id_placa = placa.upper(), id_parqueo = idparqueo, id_usuario = vehiculo.id_usuario) # Nuevo ingreso
-                        db.session.add(nuevoEgreso) # Se agrega a la base de datos
-                        db.session.commit() # Hace un commit a la base de datos para guardar los datos
-                        flash('El vehículo ha salido del parqueo',  category='success')
-
-                        setattr(reporteR, 'ocupados', reporteR.ocupados - 1)
-                        setattr(reporteR, 'disponibles', reporteR.disponibles + 1)
-                        db.session.commit()
-                        return render_template("guarda_egresos.html", nombre=nombre, id=idparqueo)
-                if  int(ingresos.id_parqueo) != int(idparqueo):
-                    flash('Placa equivocada',  category='error')
-                    return render_template("guarda_egresos.html", nombre=nombre, id=idparqueo)
-                elif ingresos:
-                    if ingresos.fecha  >= egresos.fecha:
-                        nuevoEgreso = Actividad(fecha= fecha, actividad = "Egreso", id_placa = placa.upper(), id_parqueo = idparqueo, id_usuario = vehiculo.id_usuario) # Nuevo ingreso
-                        db.session.add(nuevoEgreso) # Se agrega a la base de datos
-                        db.session.commit() # Hace un commit a la base de datos para guardar los datos
-                        flash('El vehículo ha salido del parqueo',  category='success')
-
-                        setattr(reporteR, 'ocupados', reporteR.ocupados - 1)
-                        setattr(reporteR, 'disponibles', reporteR.disponibles + 1)
-                        db.session.commit()
-                        return render_template("guarda_egresos.html", nombre=nombre, id=idparqueo)
-                else:
-                    flash('El vehículo no se encuentra en el parqueo',  category='error')
-                    return render_template("guarda_egresos.html", nombre=nombre, id=idparqueo)
-           
-            elif not vehiculo.espacio and vehiculo.tipo == "Moto" and reporteM.ocupados > 0:
-                
-                if reporteM.ocupados == 0:
-                    flash('No se encuentran vehículos en los espacios de motos',  category='error')
-                    return render_template("guarda_egresos.html", nombre=nombre, id=idparqueo)
-
-                if not egresos and  int(ingresos.id_parqueo) == int(idparqueo):
-                        nuevoEgreso = Actividad(fecha= fecha, actividad = "Egreso", id_placa = placa.upper(), id_parqueo = idparqueo, id_usuario = vehiculo.id_usuario) # Nuevo ingreso
-                        db.session.add(nuevoEgreso) # Se agrega a la base de datos
-                        db.session.commit() # Hace un commit a la base de datos para guardar los datos
-                        flash('El vehículo ha salido del parqueo',  category='success')
-
-                        setattr(reporteM, 'ocupados', reporteM.ocupados - 1)
-                        setattr(reporteM, 'disponibles', reporteM.disponibles + 1)
-                        db.session.commit()
-                        return render_template("guarda_egresos.html", nombre=nombre, id=idparqueo)
-                if  int(ingresos.id_parqueo) != int(idparqueo):
-                    flash('Placa equivocada',  category='error')
-                    return render_template("guarda_egresos.html", nombre=nombre, id=idparqueo)
-                elif ingresos:
-                    if ingresos.fecha  >= egresos.fecha:
-                        nuevoEgreso = Actividad(fecha= fecha, actividad = "Egreso", id_placa = placa.upper(), id_parqueo = idparqueo, id_usuario = vehiculo.id_usuario) # Nuevo ingreso
-                        db.session.add(nuevoEgreso) # Se agrega a la base de datos
-                        db.session.commit() # Hace un commit a la base de datos para guardar los datos
-                        flash('El vehículo ha salido del parqueo',  category='success')
-
-                        setattr(reporteM, 'ocupados', reporteM.ocupados - 1)
-                        setattr(reporteM, 'disponibles', reporteM.disponibles + 1)
-                        db.session.commit()
-                        return render_template("guarda_egresos.html", nombre=nombre, id=idparqueo)
+             espaciosOcupados = view_resumen.query.filter_by(id_parqueo = idparqueo, tipo = vehiculo.tipo, espacio = vehiculo.espacio).first()
+        if ultimaEntrada:
+            if ultimaEntrada.id_parqueo != idparqueo:
+                flash('Placa equivocada',  category='error')
             else:
-                    flash('El vehículo no se encuentra en el parqueo',  category='error')
-                    return render_template("guarda_egresos.html", nombre=nombre, id=idparqueo)
+                flash('El vehículo aún se encuentra en el parqueo',  category='error')
+            return render_template("guarda_ingresos.html", imagen = "semaforoRojo.png", nombre=nombre, id=idparqueo)
         else:
-            flash('El vehículo no está registrado',  category='error')
-            return render_template("guarda_egresos.html",  nombre=nombre, id=idparqueo)
+            if not espaciosOcupados and vehiculo:
+                nuevoIngreso =  Actividad(fecha= fecha, actividad = "Ingreso", id_placa = placa.upper(), id_parqueo = idparqueo, id_usuario = vehiculo.id_usuario) 
+                db.session.add(nuevoIngreso) 
+                db.session.commit() 
+                flash('El vehículo puede ingresar',  category='success')
+                return render_template("guarda_ingresos.html", imagen = "semaforoVerde.png", nombre=nombre, id=idparqueo)
+            elif espaciosOcupados:
+                if vehiculo.tipo == "Carro" and vehiculo.espacio == True:
+                    if espaciosOcupados.ocupados < espaciosOcupados.capacidad_ley:
+                        nuevoIngreso =  Actividad(fecha= fecha, actividad = "Ingreso", id_placa = placa.upper(), id_parqueo = idparqueo, id_usuario = vehiculo.id_usuario) 
+                        db.session.add(nuevoIngreso) 
+                        db.session.commit()
+                    else:
+                        flash('Los espacios ley 7600 están llenos',  category='error')
+                        return render_template("guarda_ingresos.html", imagen = "semaforoRojo.png", nombre=nombre, id=idparqueo)
+                if vehiculo.tipo == "Carro" and vehiculo.espacio == False:
+                    if espaciosOcupados.ocupados < espaciosOcupados.capacidad_regulares:
+                        nuevoIngreso =  Actividad(fecha= fecha, actividad = "Ingreso", id_placa = placa.upper(), id_parqueo = idparqueo, id_usuario = vehiculo.id_usuario) 
+                        db.session.add(nuevoIngreso) 
+                        db.session.commit() 
+                    else:
+                        flash('Los espacios regulares están llenos',  category='error')
+                        return render_template("guarda_ingresos.html", imagen = "semaforoRojo.png", nombre=nombre, id=idparqueo)
+                if vehiculo.tipo == "Moto":
+                    if espaciosOcupados.ocupados < espaciosOcupados.capacidad_motos:
+                        nuevoIngreso =  Actividad(fecha= fecha, actividad = "Ingreso", id_placa = placa.upper(), id_parqueo = idparqueo, id_usuario = vehiculo.id_usuario) 
+                        db.session.add(nuevoIngreso) 
+                        db.session.commit()
+                    else:
+                        flash('Los espacios de motos están llenos',  category='error')
+                        return render_template("guarda_ingresos.html", imagen = "semaforoRojo.png", nombre=nombre, id=idparqueo)
+                else:
+                    flash('El vehículo no está registrado',  category='error')
+                    return render_template("guarda_ingresos.html", imagen = "semaforoRojo.png", nombre=nombre, id=idparqueo)
+                flash('El vehículo puede ingresar',  category='success')
+                return render_template("guarda_ingresos.html", imagen = "semaforoVerde.png", nombre=nombre, id=idparqueo)
 
-    def reportes():
-        print("En progreso")
+            else:
+                flash('El vehículo no está registrado',  category='error')
+                return render_template("guarda_ingresos.html", imagen = "semaforoRojo.png", nombre=nombre, id=idparqueo)
+   
+    def egresoVehiculos(nombre, idparqueo, placa):
+        vehiculo = Vehiculo.query.filter_by(placa=placa.upper()).first()
+        ultimaEntrada = view_entradas.query.filter_by(id_placa = placa.upper(), id_parqueo = idparqueo).first()
+        fecha = datetime.today()
+
+        if ultimaEntrada:
+            nuevoEgreso =  Actividad(fecha= fecha, actividad = "Egreso", id_placa = placa.upper(), id_parqueo = idparqueo, id_usuario = vehiculo.id_usuario) 
+            db.session.add(nuevoEgreso) 
+            db.session.commit() 
+            flash('El vehículo puede salir',  category='success')
+            return render_template("guarda_egresos.html", nombre=nombre, id=idparqueo)
+        else:
+            flash('El vehículo no se encuentra en el parqueo',  category='error')
+            return render_template("guarda_egresos.html", nombre=nombre, id=idparqueo)
+    
 
 class Actividad(db.Model):
     id  = db.Column(db.Integer, primary_key=True)
     fecha = db.Column(db.DateTime, nullable=False)
     actividad = db.Column(db.String(100), nullable=False)
-    id_placa =  db.Column(db.String, db.ForeignKey('vehiculo.placa'), nullable=False)
+    id_placa =  db.Column(db.String, nullable=False, unique=True)
     id_parqueo = db.Column(db.Integer, db.ForeignKey('parqueo.id'), nullable=False)
+    id_placa =  db.Column(db.String, db.ForeignKey('vehiculo.placa'), nullable=False)
     id_usuario = db.Column(db.Integer, db.ForeignKey('usuario.id'), nullable=False)
 
-class reporte_ocupacion(db.Model):
-    id  = db.Column(db.Integer, primary_key=True)
-    id_parqueo = db.Column(db.Integer, db.ForeignKey('parqueo.id'), nullable=False)
-    vehiculo = db.Column(db.String(100), nullable=False)
-    espacio = db.Column(db.Boolean, nullable=False)
-    ocupados = db.Column(db.Integer, nullable=False)
-    disponibles = db.Column(db.Integer, nullable=False)
-   
 class Parqueo(db.Model): # Modelo SQLAlchemy para le estructura de la tabla
     id = db.Column(db.Integer, primary_key=True)
     nombre = db.Column(db.String(150), unique=True, nullable=False)
@@ -440,7 +252,6 @@ class Parqueo(db.Model): # Modelo SQLAlchemy para le estructura de la tabla
     capacidad_motos = db.Column(db.Integer, nullable=False)
     capacidad_ley = db.Column(db.Integer, nullable=False)
     actividad = db.relationship('Actividad')
-    reporte = db.relationship('reporte_ocupacion')
 
 class Vehiculo(db.Model): # Modelo SQLAlchemy para le estructura de la tabla
     id = db.Column(db.Integer, primary_key=True)
@@ -451,5 +262,40 @@ class Vehiculo(db.Model): # Modelo SQLAlchemy para le estructura de la tabla
     espacio = db.Column(db.Boolean, nullable=False)
     id_usuario = db.Column(db.Integer, db.ForeignKey('usuario.id'))
     actividad = db.relationship('Actividad')
+
+
+class view_salidas(db.Model):
+    __table__ = create_view(
+    name="salidas_mas_recientes",    
+    selectable=select(Actividad.id_placa, func.max(Actividad.fecha).label('egreso'))
+               .where(Actividad.actividad == 'Egreso').group_by(Actividad.id_placa),
+    metadata = db.metadata,
+    replace=True
+    )
+
+class view_entradas(db.Model):
+    __table__ = create_view(
+    name="entradas_mas_recientes",    
+    selectable=select(Actividad.id_placa, Actividad.id_parqueo, Vehiculo.tipo, Vehiculo.espacio, func.max(Actividad.fecha).label('ingreso'))
+                .join(view_salidas, Actividad.id_placa==view_salidas.id_placa,isouter=True)
+                .join(Vehiculo, Actividad.id_placa == Vehiculo.placa,isouter=True)
+                .where(and_(Actividad.actividad == 'Ingreso', or_(Actividad.fecha > view_salidas.egreso, view_salidas.egreso == None)))
+                .group_by(Actividad.id_placa, Actividad.id_parqueo, Vehiculo.tipo, Vehiculo.espacio),
+                metadata = db.metadata,
+                replace=True
+    )
+
+class view_resumen(db.Model):
+    __table__ = create_view(
+    name="resumen_parqueo",    
+    selectable=select(view_entradas.id_parqueo, view_entradas.tipo, view_entradas.espacio, Parqueo.capacidad_regulares, Parqueo.capacidad_motos, 
+                      Parqueo.capacidad_ley, func.count('*').label('ocupados'))
+                .join(Parqueo, view_entradas.id_parqueo == Parqueo.id)
+                .group_by(view_entradas.id_parqueo, view_entradas.tipo, view_entradas.espacio, Parqueo.nombre, Parqueo.capacidad_regulares, 
+                          Parqueo.capacidad_motos, Parqueo.capacidad_ley)
+                .order_by(view_entradas.id_parqueo, view_entradas.tipo, view_entradas.espacio),
+                metadata = db.metadata,
+                replace=True
+    )
 
 

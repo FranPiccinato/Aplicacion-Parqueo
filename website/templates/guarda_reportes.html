@@ -84,31 +84,30 @@ Reporte de ocupación del {{nombre}}
     </thead>
     <tbody>
         {% for r in reporte %}
-            {% if r.id_parqueo | int == id | int%}
-                    {% set totalOcupados.value = totalOcupados.value + r.ocupados | int %}
-                    {% set totalDisponibles.value = totalDisponibles.value + r.disponibles | int %}
-                {% if r.vehiculo == "Carro" and r.espacio == True %}
-                    <tr>
-                        <th scope="row">Ley 7600</th>
-                        <td>{{r.ocupados}}</td>
-                        <td>{{r.disponibles}}</td>
-                    </tr>
+            {% if r.tipo == "Carro" and r.espacio == True %}
+                <tr>
+                    <th scope="row">Ley 7600</th>
+                    <td>{{r.ocupados}}</td>
+                    <td>{{r.capacidad_ley - r.ocupados}}</td>
+                </tr>
 
-                {% elif r.vehiculo == "Carro" and r.espacio == False %}
-                    <tr>
-                        <th scope="row">Regulares</th>
-                        <td>{{r.ocupados}}</td>
-                        <td>{{r.disponibles}}</td>
-                    </tr>
-                {% else %}
-                    <tr>
-                        <th scope="row">Motos</th>
-                        <td>{{r.ocupados}}</td>
-                        <td>{{r.disponibles}}</td>
-                    </tr>
-                {% endif %}
+            {% elif r.tipo == "Carro" and r.espacio == False %}
+                <tr>
+                    <th scope="row">Regulares</th>
+                    <td>{{r.ocupados}}</td>
+                    <td>{{r.capacidad_regulares - r.ocupados}}</td>
+                </tr>
+            {% else %}
+                <tr>
+                    <th scope="row">Motos</th>
+                    <td>{{r.ocupados}}</td>
+                    <td>{{r.capacidad_motos- r.ocupados}}</td>
+                </tr>
             {% endif %}
+            {% set totalOcupados.value = totalOcupados.value + r.ocupados%}
       {% endfor %}
+      {% set totalDisponibles.value = parqueo.capacidad_regulares +  parqueo.capacidad_motos +  parqueo.capacidad_ley%}
+      {% set totalDisponibles.value = totalDisponibles.value - totalOcupados.value %}
     </tbody>
   </table>
   <div class="mt-4 pt-4">

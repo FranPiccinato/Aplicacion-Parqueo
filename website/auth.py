@@ -1,7 +1,7 @@
 from flask import Blueprint, render_template, request, flash, redirect, url_for
 import re
 from flask_login import login_required, logout_user, current_user
-from .models import Usuario, Administrador, Parqueo, Guarda, reporte_ocupacion
+from .models import Usuario, Administrador, Parqueo, Guarda, view_resumen
 from . import db
 from sqlalchemy import asc
 
@@ -125,10 +125,9 @@ def inicioParqueo():
 @login_required
 def ingresoParqueo(nombre, id):
     esGuarda()
-    Guarda.informacionParqueo(id)
     if request.method == 'POST':
         placa = request.form.get('placaVehiculo')
-        return Guarda.ingresarPlaca(placa, id, nombre)
+        return Guarda.ingresarPlaca(nombre, id, placa)
 
     
     return render_template('guarda_ingresos.html', nombre = nombre, id = id)
@@ -140,14 +139,14 @@ def egresoParqueo(nombre, id):
     esGuarda()
     if request.method == 'POST':
         placa = request.form.get('placaVehiculo')
-        return Guarda.egresoVehiculos(placa, id, nombre)
+        return Guarda.egresoVehiculos(nombre, id, placa)
     return render_template('guarda_egresos.html', nombre = nombre, id = id)
 
 @auth.route('/reporte-ocupacion/<nombre>&<id>')
 @login_required
 def reporteOcupacion(nombre, id):
     esGuarda()
-    return render_template('guarda_reportes.html', nombre = nombre, id = id, reporte = reporte_ocupacion.query.all())
+    return render_template('guarda_reportes.html', nombre = nombre, id = id, reporte = view_resumen.query.filter_by(id_parqueo = id).all(), parqueo = Parqueo.query.filter_by(id = id).first())
 
 def esGuarda():
     if current_user.rol != 2:
