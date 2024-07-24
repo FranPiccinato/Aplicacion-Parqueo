@@ -174,7 +174,7 @@ class Guarda(Usuario):
              espaciosOcupados = view_resumen.query.filter_by(id_parqueo = idparqueo, tipo = vehiculo.tipo, espacio = vehiculo.espacio).first()
         if ultimaEntrada:
             if ultimaEntrada.id_parqueo != idparqueo:
-                flash('Placa equivocada',  category='error')
+                flash('El vehículo se encuentra en otro parqueo',  category='error')
             else:
                 flash('El vehículo aún se encuentra en el parqueo',  category='error')
             return render_template("guarda_ingresos.html", imagen = "semaforoRojo.png", nombre=nombre, id=idparqueo)
